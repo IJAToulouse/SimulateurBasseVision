@@ -6,7 +6,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
-
 /**
  * An activity representing a single Item detail screen. This
  * activity is only used on handset devices. On tablet-size devices,
@@ -17,7 +16,6 @@ import android.view.MenuItem;
  * more than a {@link ItemDetailFragment}.
  */
 public class ItemDetailActivity extends ActionBarActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
