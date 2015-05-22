@@ -9,10 +9,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal|left">
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="25dp" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,8 +44,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="  Pathologie"
-            android:id="@+id/textView_pathologie"
+            android:text="  Champ visuel"
+            android:id="@+id/textView_champVisuel"
             android:textStyle="bold"
             android:textSize="20dp" />
 
@@ -57,9 +53,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Aucune"
-            android:id="@+id/radioButton_aucune"
+            android:id="@+id/radioButton_normal"
             android:layout_marginLeft="20dp"
-            android:textSize="18dp" />
+            android:textSize="18dp"
+            android:checked="true" />
 
         <RadioButton
             android:layout_width="wrap_content"
@@ -80,20 +77,51 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Vision Tubulaire"
-            android:id="@+id/radioButton_visionTubulaire"
+            android:id="@+id/radioButton_tubulaire"
             android:layout_marginLeft="20dp"
-            android:textSize="18dp" />
+            android:textSize="18dp"
+            android:checked="false" />
 
         <SeekBar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/seekBar_visionTubu"
+            android:id="@+id/seekBar_tubulaire"
             android:progress="100"
             android:splitTrack="false" />
 
-        <Space
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vision Parcellaire"
+            android:id="@+id/radioButton_percellaire"
+            android:layout_marginLeft="20dp"
+            android:textSize="18dp"
+            android:checked="false" />
+
+        <SeekBar
             android:layout_width="match_parent"
-            android:layout_height="25dp" />
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar_parcellaire"
+            android:progress="0"
+            android:splitTrack="false"
+            android:layout_gravity="center_horizontal" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hémianopsie"
+            android:id="@+id/radioButton_hemianopsie"
+            android:layout_marginLeft="20dp"
+            android:textSize="18dp"
+            android:checked="false" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar_hemianopsie"
+            android:progress="100"
+            android:splitTrack="false"
+            android:layout_gravity="center_horizontal" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -109,7 +137,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/seekBar_contraste"
-            android:progress="50"
+            android:progress="100"
             android:splitTrack="false" />
 
         <Space
@@ -121,7 +149,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="  Luminosité"
-            android:id="@+id/textView3"
+            android:id="@+id/textView_luminosite"
             android:textStyle="bold"
             android:textSize="20dp" />
 
@@ -131,10 +159,6 @@
             android:id="@+id/seekBar_luminosite"
             android:progress="50"
             android:splitTrack="false" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="65dp" />
 
         <Button
             android:layout_width="wrap_content"
@@ -146,7 +170,7 @@
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="91dp"
             android:weightSum="1">
 
             <Button
