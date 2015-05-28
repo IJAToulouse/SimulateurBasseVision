@@ -6,12 +6,8 @@
 
     <RadioGroup
         android:layout_width="229dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|left">
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="25dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -39,10 +35,6 @@
                 android:id="@+id/spinner_distance"
                 android:layout_gravity="right" />
         </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="25dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -91,10 +83,6 @@
             android:progress="100"
             android:splitTrack="false" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="25dp" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -112,10 +100,6 @@
             android:progress="50"
             android:splitTrack="false" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="25dp" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -132,40 +116,12 @@
             android:progress="50"
             android:splitTrack="false" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="65dp" />
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Appliquer"
             android:id="@+id/button_appliquer"
             android:layout_gravity="center|bottom" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:weightSum="1">
-
-            <Button
-                android:layout_width="106dp"
-                android:layout_height="wrap_content"
-                android:text="Importer"
-                android:id="@+id/button_importer"
-                android:layout_gravity="bottom|left"
-                android:layout_marginBottom="20dp"
-                android:layout_marginLeft="10dp" />
-
-            <Button
-                android:layout_width="106dp"
-                android:layout_height="wrap_content"
-                android:text="Exporter"
-                android:id="@+id/button_exporter"
-                android:layout_gravity="bottom|right"
-                android:layout_marginBottom="20dp" />
-        </LinearLayout>
 
     </RadioGroup>
 
