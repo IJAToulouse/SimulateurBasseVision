@@ -131,7 +131,8 @@
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="100"
                 android:id="@+id/textView_tubu"
-                android:layout_gravity="center_vertical|right" />
+                android:layout_gravity="center_vertical|right"
+                android:editable="true" />
         </LinearLayout>
 
         <RadioButton
@@ -203,7 +204,9 @@
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="100"
                 android:id="@+id/textView_contraste_sb"
-                android:layout_gravity="center_vertical|right" />
+                android:layout_gravity="center_vertical|right"
+                android:editable="true"
+                android:enabled="true" />
         </LinearLayout>
 
         <Space

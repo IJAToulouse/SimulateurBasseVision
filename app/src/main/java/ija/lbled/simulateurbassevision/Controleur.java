@@ -5,11 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -28,7 +24,6 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 /**
  * Created by l.bled on 19/05/2015.
@@ -39,12 +34,14 @@ public class Controleur extends Activity {
 
     private String selectedImagePath;
     private boolean imageChargee = false;
-    private int valeurLumi = 50, valeurContraste = 1;
+    private int valeurLumi = 50;
+    private double valeurContraste = 0;
     private ImageView image;
     private Bitmap bMap;
     private Bitmap original;
+    private TextView tubulaireValue, scotomeValue, hemiaValue;
     private SeekBar scotomeSB, tubulaireSB, hemiaSB, contrasteSB, luminositeSB;
-    RadioButton normalRB, scotomeRB, tubuRB, hemiaRB;
+    private RadioButton normalRB, scotomeRB, tubuRB, hemiaRB;
     private BaseLoaderCallback mOpenCVCallBack = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -100,7 +97,7 @@ public class Controleur extends Activity {
             }
         });
 
-        final TextView scotomeValue = (TextView)findViewById(R.id.textView_scotome);
+        scotomeValue = (TextView)findViewById(R.id.textView_scotome);
         scotomeSB = (SeekBar)findViewById(R.id.seekBar_scotome);
         scotomeSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -113,7 +110,8 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        final TextView tubulaireValue = (TextView)findViewById(R.id.textView_tubu);
+        tubulaireValue = (TextView)findViewById(R.id.textView_tubu);
+        tubulaireValue.setEnabled(false);
         tubulaireSB = (SeekBar)findViewById(R.id.seekBar_tubulaire);
         tubulaireSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -126,7 +124,7 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        final TextView hemiaValue = (TextView)findViewById(R.id.textView_hemia);
+        hemiaValue = (TextView)findViewById(R.id.textView_hemia);
         hemiaSB = (SeekBar)findViewById(R.id.seekBar_hemia);
         hemiaSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -152,8 +150,8 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
                     bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                    bMap = createContrast(bMap, 0 - ((100 - (seekBar.getProgress())) * 0.8));
-                    image.setImageBitmap(bMap);
+                    valeurContraste = 0 - ((100 - (seekBar.getProgress())) * 0.8);
+                    image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
                 }
             }
         });
@@ -171,8 +169,6 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
                     bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                    Mat imageMat = new Mat(bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
-                    Utils.bitmapToMat(bMap, imageMat);
                     if (seekBar.getProgress() > 50) {
                         valeurLumi = (seekBar.getProgress() - 50) * 2;
                     } else if (seekBar.getProgress() < 50) {
@@ -180,9 +176,7 @@ public class Controleur extends Activity {
                     } else {
                         valeurLumi = 0;
                     }
-                    imageMat.convertTo(imageMat, -1, valeurContraste, valeurLumi);
-                    Utils.matToBitmap(imageMat, bMap);
-                    image.setImageBitmap(bMap);
+                    image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
                 }
             }
         });
@@ -197,18 +191,33 @@ public class Controleur extends Activity {
                 selectedImagePath = getPath(selectedImageUri);
                 bMap = BitmapFactory.decodeFile(selectedImagePath);
                 Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
-               // Bitmap myBitmap32 = bMap.copy(Bitmap.Config.ARGB_8888, true);
                 Utils.bitmapToMat(bMap, imageMat);
-               // Imgproc.cvtColor(imageMat, imageMat, Imgproc.COLOR_RGB2BGR);
-                //imageMat.convertTo(imageMat, -1, 2, 0);
-                //Bitmap resultBitmap = Bitmap.createBitmap(imageMat.cols(), imageMat.rows(),Bitmap.Config.ARGB_8888);
                 Utils.matToBitmap(imageMat, bMap);
-                if (bMap.getHeight() < bMap.getWidth()) {
-                    Bitmap.createScaledBitmap(bMap, 1920, 1080, false);
-                } else if (bMap.getHeight() == bMap.getWidth()) {
-                    Bitmap.createScaledBitmap(bMap, 1080, 1080, false);
-                } else {
-                    Bitmap.createScaledBitmap(bMap, 1080, 1920, false);
+                Log.i("Format", (float)bMap.getHeight() /(float)bMap.getWidth()+"");
+                if ((float)bMap.getHeight() /(float)bMap.getWidth() == .5625 ||
+                        (float)bMap.getWidth() / (float)bMap.getHeight() == .5625) { //16/9
+                    Log.i("Format", "16/9");
+                    if (bMap.getHeight() < bMap.getWidth()) {
+                        bMap = Bitmap.createScaledBitmap(bMap, 1280, 720, false);
+                    } else {
+                        bMap = Bitmap.createScaledBitmap(bMap, 720, 1280, false);
+                    }
+                } else if ((float)bMap.getHeight() / (float)bMap.getWidth() == .625 ||
+                        (float)bMap.getWidth() / (float)bMap.getHeight() == .625) { //16/10
+                    Log.i("Format", "16/10");
+                    if (bMap.getHeight() < bMap.getWidth()) {
+                        bMap = Bitmap.createScaledBitmap(bMap, 1152, 720, false);
+                    } else {
+                        bMap = Bitmap.createScaledBitmap(bMap, 720, 1152, false);
+                    }
+                } else if ((float)bMap.getHeight() / (float)bMap.getWidth() == .75 ||
+                        (float)bMap.getWidth() / (float)bMap.getHeight() == .75) { //4/3
+                    Log.i("Format", "16/10");
+                    if (bMap.getHeight() < bMap.getWidth()) {
+                        bMap = Bitmap.createScaledBitmap(bMap, 1200, 900, false);
+                    } else {
+                        bMap = Bitmap.createScaledBitmap(bMap, 900, 1200, false);
+                    }
                 }
                 image.setImageBitmap(bMap);
                 original = bMap;
@@ -217,7 +226,27 @@ public class Controleur extends Activity {
         }
     }
 
-    public static Bitmap createContrast(Bitmap src, double value) {
+    /**
+     * Change la luminosite de l'image
+     * @param src
+     * @param valeur
+     * @return bitmap avec nouvelle luminosite
+     */
+    public static Bitmap changerLuminosite(Bitmap src, int valeur) {
+        Mat imageMat = new Mat(src.getHeight(), src.getWidth(), CvType.CV_8UC1);
+        Utils.bitmapToMat(src, imageMat);
+        imageMat.convertTo(imageMat, -1, 1, valeur);
+        Utils.matToBitmap(imageMat, src);
+        return src;
+    }
+
+    /**
+     * Change la cotraste de l'image
+     * @param src
+     * @param valeur
+     * @return bitmap avec nouvelle contraste
+     */
+    public static Bitmap changerContraste(Bitmap src, double valeur) {
         // image size
         int width = src.getWidth();
         int height = src.getHeight();
@@ -227,7 +256,7 @@ public class Controleur extends Activity {
         int A, R, G, B;
         int pixel;
         // get contrast value
-        double contrast = Math.pow((100 + value) / 100, 2);
+        double contrast = Math.pow((100 + valeur) / 100, 2);
 
         // scan through all pixels
         for(int x = 0; x < width; ++x) {
@@ -280,18 +309,30 @@ public class Controleur extends Activity {
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(false);
+            scotomeValue.setEnabled(false);
+            tubulaireValue.setEnabled(false);
+            hemiaValue.setEnabled(false);
         } else if (scotomeRB.isChecked()) {
             scotomeSB.setEnabled(true);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(false);
+            scotomeValue.setEnabled(true);
+            tubulaireValue.setEnabled(false);
+            hemiaValue.setEnabled(false);
         } else if (tubuRB.isChecked()) {
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(true);
             hemiaSB.setEnabled(false);
+            scotomeValue.setEnabled(false);
+            tubulaireValue.setEnabled(true);
+            hemiaValue.setEnabled(false);
         } else if (hemiaRB.isChecked()) {
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(true);
+            scotomeValue.setEnabled(false);
+            tubulaireValue.setEnabled(false);
+            hemiaValue.setEnabled(true);
         }
     }
 
@@ -325,21 +366,4 @@ public class Controleur extends Activity {
         // this is our fallback here
         return uri.getPath();
     }
-
-   /* private class ModifierImage extends AsyncTask<Integer, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(Integer... params) {
-            bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-            Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
-            Utils.bitmapToMat(bMap, imageMat);
-            imageMat.convertTo(imageMat, -1, 1, params[0]);
-            Utils.matToBitmap(imageMat, bMap);
-            return bMap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            image.setImageBitmap(result);
-        }
-    }*/
 }
