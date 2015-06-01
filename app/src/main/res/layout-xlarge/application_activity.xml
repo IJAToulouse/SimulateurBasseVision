@@ -12,7 +12,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp" />
+            android:layout_height="37dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -21,12 +21,14 @@
             android:text="  Acuité visuelle"
             android:id="@+id/textView_acuite"
             android:textStyle="bold"
-            android:textSize="20dp"/>
+            android:textSize="20dp"
+            android:background="#7ed1d1d1" />
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="#7ed1d1d1">
 
             <Spinner
                 android:layout_width="106dp"
@@ -47,7 +49,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp" />
+            android:layout_height="25dp"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -57,7 +59,7 @@
             android:id="@+id/textView_champVisuel"
             android:textStyle="bold"
             android:textSize="20dp"
-            android:background="@drawable/border_up"/>
+            android:background="#7ed1d1d1" />
 
         <RadioButton
             android:layout_width="match_parent"
@@ -66,7 +68,7 @@
             android:id="@+id/radioButton_normal"
             android:textSize="18dp"
             android:checked="true"
-            android:background="@drawable/border_center"/>
+            android:background="#7ed1d1d1"/>
 
         <RadioButton
             android:layout_width="fill_parent"
@@ -75,14 +77,14 @@
             android:id="@+id/radioButton_scotome"
             android:singleLine="true"
             android:textSize="18dp"
-            android:background="@drawable/border_center"/>
+            android:background="#7ed1d1d1"/>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/border_center">
+            android:background="#7ed1d1d1">
 
             <SeekBar
                 android:layout_width="wrap_content"
@@ -107,7 +109,7 @@
             android:id="@+id/radioButton_tubulaire"
             android:textSize="18dp"
             android:checked="false"
-            android:background="@drawable/border_center"
+            android:background="#7ed1d1d1"
             android:layout_gravity="right" />
 
         <LinearLayout
@@ -115,7 +117,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/border_center">
+            android:background="#7ed1d1d1">
 
             <SeekBar
                 android:layout_width="match_parent"
@@ -142,14 +144,14 @@
             android:id="@+id/radioButton_hemianopsie"
             android:textSize="18dp"
             android:checked="false"
-            android:background="@drawable/border_center"/>
+            android:background="#7ed1d1d1"/>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/border_down">
+            android:background="#7ed1d1d1">
 
             <SeekBar
                 android:layout_width="wrap_content"
@@ -172,7 +174,7 @@
         <Space
             android:layout_width="match_parent"
             android:layout_height="25dp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -182,12 +184,14 @@
             android:id="@+id/textView_contraste"
             android:textStyle="bold"
             android:textSize="20dp"
-            android:editable="false"/>
+            android:editable="false"
+            android:background="#7ed1d1d1"/>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="#7ed1d1d1">
 
             <SeekBar
                 android:layout_width="wrap_content"
@@ -204,14 +208,12 @@
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="100"
                 android:id="@+id/textView_contraste_sb"
-                android:layout_gravity="center_vertical|right"
-                android:editable="true"
-                android:enabled="true" />
+                android:layout_gravity="center_vertical|right"/>
         </LinearLayout>
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp" />
+            android:layout_height="25dp"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -220,12 +222,14 @@
             android:text="  Luminosité"
             android:id="@+id/textView_luminosite"
             android:textStyle="bold"
-            android:textSize="20dp"/>
+            android:textSize="20dp"
+            android:background="#7ed1d1d1"/>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="#7ed1d1d1">
 
             <SeekBar
                 android:layout_width="wrap_content"
@@ -293,6 +297,7 @@
         android:layout_height="672dp"
         android:id="@+id/image"
         android:layout_gravity="right|center_vertical"
-        android:layout_weight="0" />
+        android:layout_weight="0"
+        android:src="@drawable/image_file_icon"/>
 
 </LinearLayout>
