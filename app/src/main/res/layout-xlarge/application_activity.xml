@@ -6,13 +6,13 @@
 
     <RadioGroup
         android:layout_width="229dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|left"
         android:id="@+id/radioGroup">
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="37dp" />
+            android:layout_height="15dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -28,28 +28,31 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#7ed1d1d1">
+            android:layout_gravity="center_horizontal">
 
-            <Spinner
-                android:layout_width="106dp"
+            <EditText
+                android:layout_width="90dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/spinner_acuite"
-                android:layout_gravity="right"
-                android:spinnerMode="dropdown"
-                android:entries="@array/acuite_arrays"/>
+                android:id="@+id/editText_acuite"
+                android:inputType="numberDecimal"
+                android:text="10"
+                android:background="#7ed1d1d1"
+                android:textSize="18dp"
+                android:numeric="integer|decimal"
+                android:paddingLeft="60dp" />
 
-            <Spinner
-                android:layout_width="106dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinner_distance"
-                android:layout_gravity="right"
-                android:spinnerMode="dropdown"
-                android:entries="@array/distance_arrays"/>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="/ 10"
+                android:id="@+id/textView_acuite_deno"
+                android:textSize="18dp"
+                android:background="#7ed1d1d1" />
         </LinearLayout>
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp"/>
+            android:layout_height="15dp"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -171,9 +174,17 @@
                 android:layout_gravity="center_vertical|right" />
         </LinearLayout>
 
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/spinner_hemia"
+            android:spinnerMode="dropdown"
+            android:entries="@array/hemia_arrays"
+            android:background="@drawable/spinner_background" />
+
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp"
+            android:layout_height="15dp"
             android:layout_gravity="center_horizontal"/>
 
         <TextView
@@ -213,7 +224,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp"/>
+            android:layout_height="15dp"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -252,14 +263,31 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="25dp" />
+            android:layout_height="15dp" />
+
+        <CheckBox
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Niveau de gris"
+            android:id="@+id/checkBox_niveauDeGris"
+            android:checked="false"
+            android:textSize="18dp"
+            android:background="#7ed1d1d1" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="15dp" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="106dp"
             android:layout_height="wrap_content"
-            android:text="Appliquer"
-            android:id="@+id/button_appliquer"
-            android:layout_gravity="center|bottom" />
+            android:text="Importer Image"
+            android:id="@+id/button_importer"
+            android:layout_gravity="center" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="15dp" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -268,21 +296,18 @@
             android:weightSum="1">
 
             <Button
-                android:layout_width="106dp"
+                android:layout_width="114dp"
                 android:layout_height="wrap_content"
-                android:text="Importer"
-                android:id="@+id/button_importer"
-                android:layout_gravity="bottom|left"
-                android:layout_marginBottom="20dp"
-                android:layout_marginLeft="10dp" />
+                android:text="Importer Config"
+                android:id="@+id/button_importer_conf"
+                android:layout_gravity="left" />
 
             <Button
-                android:layout_width="106dp"
+                android:layout_width="114dp"
                 android:layout_height="wrap_content"
-                android:text="Exporter"
-                android:id="@+id/button_exporter"
-                android:layout_gravity="bottom|right"
-                android:layout_marginBottom="20dp" />
+                android:text="Exporter Config"
+                android:id="@+id/button_exporter_conf"
+                android:layout_gravity="right" />
         </LinearLayout>
 
     </RadioGroup>
@@ -294,7 +319,7 @@
 
     <ImageView
         android:layout_width="1046dp"
-        android:layout_height="672dp"
+        android:layout_height="fill_parent"
         android:id="@+id/image"
         android:layout_gravity="right|center_vertical"
         android:layout_weight="0"

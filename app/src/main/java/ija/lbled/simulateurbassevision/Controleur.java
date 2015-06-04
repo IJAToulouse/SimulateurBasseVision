@@ -1,23 +1,31 @@
 package ija.lbled.simulateurbassevision;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -26,6 +34,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * Created by l.bled on 19/05/2015.
@@ -44,6 +53,9 @@ public class Controleur extends Activity {
     private TextView tubulaireValue, scotomeValue, hemiaValue;
     private SeekBar scotomeSB, tubulaireSB, hemiaSB, contrasteSB, luminositeSB;
     private RadioButton normalRB, scotomeRB, tubuRB, hemiaRB;
+    private Spinner hemiaSpinner;
+    private CheckBox niveauDeGrisCB;
+    private EditText acuiteText;
     private BaseLoaderCallback mOpenCVCallBack = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -60,24 +72,48 @@ public class Controleur extends Activity {
         }
     };
 
+    /**
+     * Permet d'iniatiliser OpenCV pour toutes les versions d'android (Lolipop inclut)
+     * @param Version
+     * @param AppContext
+     * @param Callback
+     * @return
+     */
+    public static boolean initOpenCV(String Version, final Context AppContext,
+                                     final LoaderCallbackInterface Callback) {
+        AsyncServiceHelper helper = new AsyncServiceHelper(Version, AppContext,
+                Callback);
+        Intent intent = new Intent("org.opencv.engine.BIND");
+        intent.setPackage("org.opencv.engine");
+        if (AppContext.bindService(intent, helper.mServiceConnection,
+                Context.BIND_AUTO_CREATE)) {
+            return true;
+        } else {
+            AppContext.unbindService(helper.mServiceConnection);
+            helper.InstallService(AppContext, Callback);
+            return false;
+        }
+    }
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.application_activity);
-        //Valeurs Acuite : 0.1, 0.2, 0.3, 0.4, 0.5, 0.63, 0.8, 1/10, 1.3/10, 1.6/10, 2/10, 2.5/10, 3.2/10, 4/10
-        //Valeurs Distance : 4m, 2.5m, 40cm, 10cm
-        if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_9, this, mOpenCVCallBack))
+        if (!initOpenCV(OpenCVLoader.OPENCV_VERSION_2_4_9, this, mOpenCVCallBack))
         {
             Log.e("OpenCV", "Cannot connect to OpenCV Manager");
         }
+
         //fullscreen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+        hemiaSpinner = (Spinner)findViewById(R.id.spinner_hemia);
         image = (ImageView)findViewById(R.id.image);
         normalRB = (RadioButton)findViewById(R.id.radioButton_normal);
         scotomeRB = (RadioButton)findViewById(R.id.radioButton_scotome);
         tubuRB = (RadioButton)findViewById(R.id.radioButton_tubulaire);
         hemiaRB = (RadioButton)findViewById(R.id.radioButton_hemianopsie);
+        niveauDeGrisCB = (CheckBox)findViewById(R.id.checkBox_niveauDeGris);
+        acuiteText = (EditText)findViewById(R.id.editText_acuite);
         findViewById(R.id.button_importer).setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
 
@@ -99,6 +135,9 @@ public class Controleur extends Activity {
             }
         });
 
+        /**
+         * Listener pour la SeekBar Scotome et le texte associé
+         */
         scotomeValue = (TextView)findViewById(R.id.textView_scotome);
         scotomeSB = (SeekBar)findViewById(R.id.seekBar_scotome);
         scotomeSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -106,12 +145,19 @@ public class Controleur extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 scotomeValue.setText(String.valueOf(progress));
             }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
+        /**
+         * Listener pour la SeekBar Tubulaire et le texte associé
+         */
         tubulaireValue = (TextView)findViewById(R.id.textView_tubu);
         tubulaireValue.setEnabled(false);
         tubulaireSB = (SeekBar)findViewById(R.id.seekBar_tubulaire);
@@ -120,12 +166,19 @@ public class Controleur extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tubulaireValue.setText(String.valueOf(progress));
             }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
+        /**
+         * Listener pour la SeekBar Hemianopsie et le texte associé
+         */
         hemiaValue = (TextView)findViewById(R.id.textView_hemia);
         hemiaSB = (SeekBar)findViewById(R.id.seekBar_hemia);
         hemiaSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -133,12 +186,19 @@ public class Controleur extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 hemiaValue.setText(String.valueOf(progress));
             }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
+        /**
+         * Listener pour la SeekBar Contraste et le texte associé
+         */
         final TextView contrasteValue = (TextView)findViewById(R.id.textView_contraste_sb);
         contrasteSB = (SeekBar)findViewById(R.id.seekBar_contraste);
         contrasteSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -146,18 +206,38 @@ public class Controleur extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 contrasteValue.setText(String.valueOf(progress));
             }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
-                    bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                    valeurContraste = 0 - ((100 - (seekBar.getProgress())) * 0.8);
-                    image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                    final SeekBar mySeekBar = seekBar;
+                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement...",
+                            "Veuillez patienter", true);
+                    new Thread() {
+                        public void run() {
+                            try {
+                                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
+                                valeurContraste = 0 - ((100 - (mySeekBar.getProgress())) * 0.8);
+                                if (niveauDeGrisCB.isChecked()) {
+                                    bMap = convertionNiveauDeGris(bMap);
+                                }
+                                image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                            } catch (Exception e) {
+                            }
+                            progDailog.dismiss();
+                        }
+                    }.start();
                 }
             }
         });
 
+        /**
+         * Listener pour la SeekBar Luminosite et le texte associé
+         */
         final TextView luminositeValue = (TextView)findViewById(R.id.textView_luminosite_sb);
         luminositeSB = (SeekBar)findViewById(R.id.seekBar_luminosite);
         luminositeSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -165,26 +245,114 @@ public class Controleur extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 luminositeValue.setText(String.valueOf(progress));
             }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
-                    bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                    if (seekBar.getProgress() > 50) {
-                        valeurLumi = (seekBar.getProgress() - 50) * 2;
-                    } else if (seekBar.getProgress() < 50) {
-                        valeurLumi = 0 - ((50 - seekBar.getProgress())*2);
-                    } else {
-                        valeurLumi = 0;
-                    }
-                    image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                    final SeekBar mySeekBar = seekBar;
+                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement...",
+                            "Veuillez patienter", true);
+                    new Thread() {
+                        public void run() {
+                            try {
+                                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
+                                if (mySeekBar.getProgress() > 50) {
+                                    valeurLumi = (mySeekBar.getProgress() - 50) * 2;
+                                } else if (mySeekBar.getProgress() < 50) {
+                                    valeurLumi = 0 - ((50 - mySeekBar.getProgress()) * 2);
+                                } else {
+                                    valeurLumi = 0;
+                                }
+                                if (niveauDeGrisCB.isChecked()) {
+                                    bMap = convertionNiveauDeGris(bMap);
+                                }
+                                image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                            } catch (Exception e) {
+                            }
+                            progDailog.dismiss();
+                        }
+                    }.start();
+                }
+            }
+        });
+
+        /**
+         * Listener pour la checkBox
+         */
+        niveauDeGrisCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (imageChargee) {
+                    final Boolean checked = isChecked;
+                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement...",
+                            "Veuillez patienter", true);
+                    new Thread() {
+                        public void run() {
+                            try {
+                                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
+                                if (checked) {
+                                    bMap = convertionNiveauDeGris(bMap);
+                                }
+                                image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                            } catch (Exception e) {
+                            }
+                            progDailog.dismiss();
+                        }
+                    }.start();
                 }
             }
         });
         mettreValeursDefaut();
     }
 
+    /**
+     * Ajout du menu à la barre d'action
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    /**
+     * Action à faire lorsque qu'on tap sur l'icone d'A propos
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_about:
+                Log.i("A propos", "A propos");
+                new AlertDialog.Builder(this)
+                        .setTitle("À propos")
+                        .setMessage("Simulateur Basse Vision ©\n\nVersion application : 0.2")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // ne rien faire
+                            }
+                        })
+                        .setIcon(R.drawable.dialog_information)
+                        .show();
+                // Comportement du bouton "A Propos"
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * Résultat de l'activité lorsqu'une image est sélectionnée
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
@@ -198,27 +366,24 @@ public class Controleur extends Activity {
                 Log.i("Format", (float)bMap.getHeight() /(float)bMap.getWidth()+"");
                 if ((float)bMap.getHeight() /(float)bMap.getWidth() == .5625 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .5625) { //16/9
-                    Log.i("Format", "16/9");
                     if (bMap.getHeight() < bMap.getWidth()) {
-                        bMap = Bitmap.createScaledBitmap(bMap, 1280, 720, false);
+                        bMap = Bitmap.createScaledBitmap(bMap, 1024, 576, false);
                     } else {
-                        bMap = Bitmap.createScaledBitmap(bMap, 720, 1280, false);
+                        bMap = Bitmap.createScaledBitmap(bMap, 576, 1024, false);
                     }
                 } else if ((float)bMap.getHeight() / (float)bMap.getWidth() == .625 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .625) { //16/10
-                    Log.i("Format", "16/10");
                     if (bMap.getHeight() < bMap.getWidth()) {
-                        bMap = Bitmap.createScaledBitmap(bMap, 1152, 720, false);
+                        bMap = Bitmap.createScaledBitmap(bMap, 960, 600, false);
                     } else {
-                        bMap = Bitmap.createScaledBitmap(bMap, 720, 1152, false);
+                        bMap = Bitmap.createScaledBitmap(bMap, 600, 960, false);
                     }
                 } else if ((float)bMap.getHeight() / (float)bMap.getWidth() == .75 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .75) { //4/3
-                    Log.i("Format", "16/10");
                     if (bMap.getHeight() < bMap.getWidth()) {
-                        bMap = Bitmap.createScaledBitmap(bMap, 1200, 900, false);
+                        bMap = Bitmap.createScaledBitmap(bMap, 960, 720, false);
                     } else {
-                        bMap = Bitmap.createScaledBitmap(bMap, 900, 1200, false);
+                        bMap = Bitmap.createScaledBitmap(bMap, 720, 960, false);
                     }
                 }
                 image.setImageBitmap(bMap);
@@ -228,6 +393,18 @@ public class Controleur extends Activity {
         }
     }
 
+    /**
+     * Convertit l'image en niveau de gris
+     * @param src
+     * @return bitmap en niveau de gris
+     */
+    public static Bitmap convertionNiveauDeGris(Bitmap src) {
+        Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
+        Utils.bitmapToMat(src, tmp);
+        Imgproc.cvtColor(tmp, tmp, Imgproc.COLOR_RGB2GRAY);
+        Utils.matToBitmap(tmp, src);
+        return src;
+    }
     /**
      * Change la luminosite de l'image
      * @param src
@@ -300,7 +477,9 @@ public class Controleur extends Activity {
         contrasteSB.setProgress(100);
         luminositeSB.setProgress(50);
         normalRB.setChecked(true);
+        niveauDeGrisCB.setChecked(false);
         miseAJourSliders();
+        acuiteText.setText("10".toCharArray(), 0, 2);
     }
 
     /**
@@ -314,6 +493,7 @@ public class Controleur extends Activity {
             scotomeValue.setEnabled(false);
             tubulaireValue.setEnabled(false);
             hemiaValue.setEnabled(false);
+            hemiaSpinner.setEnabled(false);
         } else if (scotomeRB.isChecked()) {
             scotomeSB.setEnabled(true);
             tubulaireSB.setEnabled(false);
@@ -321,6 +501,7 @@ public class Controleur extends Activity {
             scotomeValue.setEnabled(true);
             tubulaireValue.setEnabled(false);
             hemiaValue.setEnabled(false);
+            hemiaSpinner.setEnabled(false);
         } else if (tubuRB.isChecked()) {
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(true);
@@ -328,6 +509,7 @@ public class Controleur extends Activity {
             scotomeValue.setEnabled(false);
             tubulaireValue.setEnabled(true);
             hemiaValue.setEnabled(false);
+            hemiaSpinner.setEnabled(false);
         } else if (hemiaRB.isChecked()) {
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(false);
@@ -335,6 +517,7 @@ public class Controleur extends Activity {
             scotomeValue.setEnabled(false);
             tubulaireValue.setEnabled(false);
             hemiaValue.setEnabled(true);
+            hemiaSpinner.setEnabled(true);
         }
     }
 
@@ -358,7 +541,7 @@ public class Controleur extends Activity {
         // try to retrieve the image from the media store first
         // this will only work for images selected from gallery
         String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
         if( cursor != null ){
             int column_index = cursor
                     .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
