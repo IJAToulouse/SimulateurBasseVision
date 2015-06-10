@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,6 +35,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 /**
@@ -43,10 +45,9 @@ public class Controleur extends Activity {
 
     private static final int SELECT_PICTURE = 1;
 
-    private String selectedImagePath;
     private boolean imageChargee = false;
     private int valeurLumi = 50;
-    private double valeurContraste = 0;
+    private double valeurContraste = 0, valeurAcuite = 10;
     private ImageView image;
     private Bitmap bMap;
     private Bitmap original;
@@ -56,6 +57,7 @@ public class Controleur extends Activity {
     private Spinner hemiaSpinner;
     private CheckBox niveauDeGrisCB;
     private EditText acuiteText;
+
     private BaseLoaderCallback mOpenCVCallBack = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -132,6 +134,57 @@ public class Controleur extends Activity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 miseAJourSliders();
                 mettreValeursDefautChampVisuel();
+            }
+        });
+
+        /**
+         * Listener pour le champ editable de l'acuité, on vérifie le texte lorsqu'on fait "OK" sur le clavier
+         */
+        acuiteText.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (imageChargee) {
+                    // If the event is a key-down event on the "enter" button
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        if (acuiteText.getText().toString().equals("")) {
+                            String acuite = Double.toString(valeurAcuite);
+                            acuiteText.setText(acuite.toCharArray(), 0, acuite.length());
+                        } else {
+                            Double valeur = Double.parseDouble(acuiteText.getText().toString());
+                            final Double valeurBuff;
+                            if (valeur > 10) {
+                                acuiteText.setText("10".toCharArray(), 0, 2);
+                                valeurBuff = 10.0;
+                            } else {
+                                valeurBuff = valeur;
+                            }
+                            // On ne recharge pas l'image si l'acuité n'est pas différente
+                            if (valeurBuff != valeurAcuite) {
+                                final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
+                                        "Veuillez patienter", true);
+                                new Thread() {
+                                    public void run() {
+                                        try {
+                                            bMap = original.copy(Bitmap.Config.ARGB_8888, true);
+                                            valeurAcuite = valeurBuff;
+                                            if (niveauDeGrisCB.isChecked()) {
+                                                bMap = convertionNiveauDeGris(bMap);
+                                            }
+                                            image.setImageBitmap(
+                                                    changerLuminosite(
+                                                            changerContraste(
+                                                                    changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
+                                        } catch (Exception e) {
+                                        }
+                                        progDailog.dismiss();
+                                    }
+                                }.start();
+                            }
+                        }
+                        return true;
+                    }
+                }
+                return false;
             }
         });
 
@@ -215,7 +268,7 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
                     final SeekBar mySeekBar = seekBar;
-                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement...",
+                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
                             "Veuillez patienter", true);
                     new Thread() {
                         public void run() {
@@ -225,7 +278,10 @@ public class Controleur extends Activity {
                                 if (niveauDeGrisCB.isChecked()) {
                                     bMap = convertionNiveauDeGris(bMap);
                                 }
-                                image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                                image.setImageBitmap(
+                                        changerLuminosite(
+                                                changerContraste(
+                                                        changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
                             } catch (Exception e) {
                             }
                             progDailog.dismiss();
@@ -254,7 +310,7 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
                     final SeekBar mySeekBar = seekBar;
-                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement...",
+                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
                             "Veuillez patienter", true);
                     new Thread() {
                         public void run() {
@@ -270,7 +326,10 @@ public class Controleur extends Activity {
                                 if (niveauDeGrisCB.isChecked()) {
                                     bMap = convertionNiveauDeGris(bMap);
                                 }
-                                image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                                image.setImageBitmap(
+                                        changerLuminosite(
+                                                changerContraste(
+                                                        changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
                             } catch (Exception e) {
                             }
                             progDailog.dismiss();
@@ -288,7 +347,7 @@ public class Controleur extends Activity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (imageChargee) {
                     final Boolean checked = isChecked;
-                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement...",
+                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
                             "Veuillez patienter", true);
                     new Thread() {
                         public void run() {
@@ -297,7 +356,10 @@ public class Controleur extends Activity {
                                 if (checked) {
                                     bMap = convertionNiveauDeGris(bMap);
                                 }
-                                image.setImageBitmap(changerLuminosite(changerContraste(bMap, valeurContraste), valeurLumi));
+                                image.setImageBitmap(
+                                        changerLuminosite(
+                                                changerContraste(
+                                                        changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
                             } catch (Exception e) {
                             }
                             progDailog.dismiss();
@@ -358,7 +420,7 @@ public class Controleur extends Activity {
             if (requestCode == SELECT_PICTURE) {
                 mettreValeursDefaut();
                 Uri selectedImageUri = data.getData();
-                selectedImagePath = getPath(selectedImageUri);
+                String selectedImagePath = getPath(selectedImageUri);
                 bMap = BitmapFactory.decodeFile(selectedImagePath);
                 Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
                 Utils.bitmapToMat(bMap, imageMat);
@@ -394,6 +456,27 @@ public class Controleur extends Activity {
     }
 
     /**
+     * Modifie le flou gaussien de l'image
+     * @param src
+     * @return bitmap avec flou modifié
+     */
+    public static Bitmap changementFlou(Bitmap src, double valeur) {
+        if (valeur != 10) {
+            Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
+            Utils.bitmapToMat(src, tmp);
+            Double size = 100 - (valeur/10 * 100);
+            if (size % 2 == 0) {
+                size ++;
+            }
+            org.opencv.core.Size s = new Size(size, size);
+            Log.i("acuite", size+"");
+            Imgproc.GaussianBlur(tmp, tmp, s, 0, 0);
+            Utils.matToBitmap(tmp, src);
+        }
+        return src;
+    }
+
+    /**
      * Convertit l'image en niveau de gris
      * @param src
      * @return bitmap en niveau de gris
@@ -405,6 +488,7 @@ public class Controleur extends Activity {
         Utils.matToBitmap(tmp, src);
         return src;
     }
+
     /**
      * Change la luminosite de l'image
      * @param src
@@ -529,6 +613,7 @@ public class Controleur extends Activity {
         tubulaireSB.setProgress(100);
         hemiaSB.setProgress(100);
     }
+
     /**
      * helper to retrieve the path of an image URI
      */

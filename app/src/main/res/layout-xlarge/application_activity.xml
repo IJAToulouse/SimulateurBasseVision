@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
 
-            <EditText
+            <ija.lbled.simulateurbassevision.NewEditText
                 android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/editText_acuite"
@@ -39,7 +39,7 @@
                 android:background="#7ed1d1d1"
                 android:textSize="18dp"
                 android:numeric="integer|decimal"
-                android:paddingLeft="60dp" />
+                android:paddingLeft="40dp" />
 
             <TextView
                 android:layout_width="fill_parent"
