@@ -2,13 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:clickable="true"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
 
     <RadioGroup
         android:layout_width="229dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|left"
-        android:id="@+id/radioGroup">
+        android:id="@+id/radioGroup" >
 
         <Space
             android:layout_width="match_parent"
@@ -30,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
 
-            <ija.lbled.simulateurbassevision.NewEditText
+            <EditText
                 android:layout_width="90dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/editText_acuite"

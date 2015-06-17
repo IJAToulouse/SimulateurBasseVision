@@ -25,4 +25,5 @@ dependencies {
     compile 'com.android.support:support-v4:22.1.1'
     compile 'com.android.support:cardview-v7:22.1.1'
     compile project(':openCVLibrary2411')
+    compile project(':simple-xml-2.7.1')
 }

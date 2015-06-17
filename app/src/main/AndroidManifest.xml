@@ -3,6 +3,7 @@
     package="ija.lbled.simulateurbassevision" >
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <supports-screens
         android:resizeable="true"
@@ -26,7 +27,7 @@
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.PICK" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

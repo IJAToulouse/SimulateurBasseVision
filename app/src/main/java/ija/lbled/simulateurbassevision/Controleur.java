@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -19,6 +20,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -28,6 +31,7 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -35,19 +39,28 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
+
+import java.io.File;
+
+import static org.opencv.core.Core.circle;
 
 /**
  * Created by l.bled on 19/05/2015.
  */
 public class Controleur extends Activity {
 
-    private static final int SELECT_PICTURE = 1;
+    private static final int COEFFICIENT_LUMINOSITE = 2;
+    private static final double COEFFICIENT_CONTRASTE = .8, COEFFICIENT_SCOTOME= 2.5;
+    private static final int SELECT_PICTURE = 1, SELECT_CONFIG = 2;
 
+    private Configuration maConfig = new Configuration();
     private boolean imageChargee = false;
-    private int valeurLumi = 50;
-    private double valeurContraste = 0, valeurAcuite = 10;
     private ImageView image;
     private Bitmap bMap;
     private Bitmap original;
@@ -57,6 +70,7 @@ public class Controleur extends Activity {
     private Spinner hemiaSpinner;
     private CheckBox niveauDeGrisCB;
     private EditText acuiteText;
+    private Button importButton, exportButton;
 
     private BaseLoaderCallback mOpenCVCallBack = new BaseLoaderCallback(this) {
         @Override
@@ -124,7 +138,77 @@ public class Controleur extends Activity {
                 Intent galleryIntent = new Intent(
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(galleryIntent, 1);
+                galleryIntent.setType("image/*");
+                startActivityForResult(galleryIntent, SELECT_PICTURE);
+            }
+        });
+
+        /**
+         * Listener pour le bouton exporter
+         */
+        exportButton = (Button)findViewById(R.id.button_exporter_conf);
+        exportButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg0) {
+                if (imageChargee) {
+                    final File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "SBV Configurations");
+                    directory.mkdirs();
+                    final Serializer serializer = new Persister();
+                    final AlertDialog.Builder alert = new AlertDialog.Builder(Controleur.this);
+
+                    alert.setTitle("Exporter");
+                    alert.setMessage("Entrez le nom du fichier XML");
+
+                    // Set an EditText view to get user input
+                    final EditText input = new EditText(Controleur.this);
+                    alert.setView(input);
+
+                    alert.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            String nomFichier = input.getText().toString();
+                            if (nomFichier.length() > 0) {
+                                File result = new File(directory, input.getText().toString() + ".xml");
+                                try {
+                                    serializer.write(maConfig, result);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                Toast.makeText(Controleur.this, "Fichier de configuration " + nomFichier +".xml créé.",
+                                        Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(Controleur.this, "Erreur sauvegarde.",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            hideKeyboard(input);
+                        }
+                    });
+
+                    alert.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            // Canceled.
+                            hideKeyboard(input);
+                        }
+                    });
+                    alert.show();
+                }
+            }
+        });
+
+
+        importButton = (Button)findViewById(R.id.button_importer_conf);
+        importButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (imageChargee) {
+                    Intent explorerIntent = new Intent(
+                            Intent.ACTION_GET_CONTENT);
+                    explorerIntent.setType("file/xml");
+                    try {
+                        startActivityForResult(explorerIntent, SELECT_CONFIG);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                        Toast.makeText(Controleur.this, "Veuillez installez un explorateur de fichier",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
             }
         });
 
@@ -133,7 +217,18 @@ public class Controleur extends Activity {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 miseAJourSliders();
+                maConfig.setMonRadioGroup(group);
                 mettreValeursDefautChampVisuel();
+            }
+        });
+
+
+        acuiteText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard(acuiteText);
+                }
             }
         });
 
@@ -147,38 +242,21 @@ public class Controleur extends Activity {
                     if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                             (keyCode == KeyEvent.KEYCODE_ENTER)) {
                         if (acuiteText.getText().toString().equals("")) {
-                            String acuite = Double.toString(valeurAcuite);
+                            String acuite = Double.toString(maConfig.getAcuite());
                             acuiteText.setText(acuite.toCharArray(), 0, acuite.length());
                         } else {
                             Double valeur = Double.parseDouble(acuiteText.getText().toString());
-                            final Double valeurBuff;
                             if (valeur > 10) {
                                 acuiteText.setText("10".toCharArray(), 0, 2);
-                                valeurBuff = 10.0;
-                            } else {
-                                valeurBuff = valeur;
+                                valeur = 10.0;
+                            } else if (valeur < .01) {
+                                acuiteText.setText("0.01".toCharArray(), 0, 4);
+                                valeur = .01;
                             }
-                            // On ne recharge pas l'image si l'acuité n'est pas différente
-                            if (valeurBuff != valeurAcuite) {
-                                final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
-                                        "Veuillez patienter", true);
-                                new Thread() {
-                                    public void run() {
-                                        try {
-                                            bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                                            valeurAcuite = valeurBuff;
-                                            if (niveauDeGrisCB.isChecked()) {
-                                                bMap = convertionNiveauDeGris(bMap);
-                                            }
-                                            image.setImageBitmap(
-                                                    changerLuminosite(
-                                                            changerContraste(
-                                                                    changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
-                                        } catch (Exception e) {
-                                        }
-                                        progDailog.dismiss();
-                                    }
-                                }.start();
+                            // On recharge l'image seulement si l'acuité a changé
+                            if (valeur != maConfig.getAcuite()) {
+                                maConfig.setAcuite(valeur);
+                                mettreAJourImage();
                             }
                         }
                         return true;
@@ -205,6 +283,20 @@ public class Controleur extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                int valeur = seekBar.getProgress();
+                Log.i("Scotome", valeur+"");
+                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
+                Mat tmp = new Mat(bMap.getWidth(), bMap.getHeight(), CvType.CV_8UC1);
+                Utils.bitmapToMat(bMap, tmp);
+                //Double to Int -> Double > String > Int
+                valeur = Integer.parseInt(Double.toString(Math.floor(valeur * COEFFICIENT_SCOTOME)));
+                circle(tmp,
+                        new Point(tmp.width() / 2, tmp.height() / 2),
+                        valeur,
+                        new Scalar(235, 235, 235, 50),
+                        -1);
+                Utils.matToBitmap(tmp, bMap);
+                image.setImageBitmap(bMap);
             }
         });
 
@@ -267,26 +359,13 @@ public class Controleur extends Activity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
-                    final SeekBar mySeekBar = seekBar;
-                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
-                            "Veuillez patienter", true);
-                    new Thread() {
-                        public void run() {
-                            try {
-                                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                                valeurContraste = 0 - ((100 - (mySeekBar.getProgress())) * 0.8);
-                                if (niveauDeGrisCB.isChecked()) {
-                                    bMap = convertionNiveauDeGris(bMap);
-                                }
-                                image.setImageBitmap(
-                                        changerLuminosite(
-                                                changerContraste(
-                                                        changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
-                            } catch (Exception e) {
-                            }
-                            progDailog.dismiss();
-                        }
-                    }.start();
+                    maConfig.setContrasteSB(seekBar.getProgress());
+                    double buffer = maConfig.getContraste();
+                    maConfig.setContraste(0 - ((100 - seekBar.getProgress()) * COEFFICIENT_CONTRASTE));
+                    // On met à jour l'image seulement si la valeur est différente
+                    if (buffer != maConfig.getContraste()) {
+                        mettreAJourImage();
+                    }
                 }
             }
         });
@@ -309,32 +388,20 @@ public class Controleur extends Activity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
-                    final SeekBar mySeekBar = seekBar;
-                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
-                            "Veuillez patienter", true);
-                    new Thread() {
-                        public void run() {
-                            try {
-                                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                                if (mySeekBar.getProgress() > 50) {
-                                    valeurLumi = (mySeekBar.getProgress() - 50) * 2;
-                                } else if (mySeekBar.getProgress() < 50) {
-                                    valeurLumi = 0 - ((50 - mySeekBar.getProgress()) * 2);
-                                } else {
-                                    valeurLumi = 0;
-                                }
-                                if (niveauDeGrisCB.isChecked()) {
-                                    bMap = convertionNiveauDeGris(bMap);
-                                }
-                                image.setImageBitmap(
-                                        changerLuminosite(
-                                                changerContraste(
-                                                        changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
-                            } catch (Exception e) {
-                            }
-                            progDailog.dismiss();
-                        }
-                    }.start();
+                    int valeur = seekBar.getProgress();
+                    maConfig.setLuminositeSB(valeur);
+                    int buffer = maConfig.getLuminosite();
+                    if (valeur > 50) {
+                        maConfig.setLuminosite((valeur - 50) * COEFFICIENT_LUMINOSITE);
+                    } else if (seekBar.getProgress() < 50) {
+                        maConfig.setLuminosite(0 - ((50 - valeur) * COEFFICIENT_LUMINOSITE));
+                    } else {
+                        maConfig.setLuminosite(0);
+                    }
+                    // On met à jour l'image seulement si la valeur est différente
+                    if (buffer != maConfig.getLuminosite()) {
+                        mettreAJourImage();
+                    }
                 }
             }
         });
@@ -346,29 +413,55 @@ public class Controleur extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (imageChargee) {
-                    final Boolean checked = isChecked;
-                    final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image ...",
-                            "Veuillez patienter", true);
-                    new Thread() {
-                        public void run() {
-                            try {
-                                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                                if (checked) {
-                                    bMap = convertionNiveauDeGris(bMap);
-                                }
-                                image.setImageBitmap(
-                                        changerLuminosite(
-                                                changerContraste(
-                                                        changementFlou(bMap, valeurAcuite), valeurContraste), valeurLumi));
-                            } catch (Exception e) {
-                            }
-                            progDailog.dismiss();
-                        }
-                    }.start();
+                    mettreAJourImage();
+                    maConfig.setIsNiveauDeGris(isChecked);
                 }
             }
         });
+
         mettreValeursDefaut();
+        desactiverElements();
+    }
+
+    /**
+     * Permet de cacher le clavier lorsqu'il n'est pas caché automatiquement
+     * @param editText
+     */
+    public void hideKeyboard(EditText editText) {
+        if (editText != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        }
+    }
+
+    /**
+     * Met à jour l'image avec les valeurs sélectionnés
+     * Création du thread pour afficher le chargement de l'image
+     */
+    public void mettreAJourImage() {
+        final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image...",
+                "Veuillez patienter", true);
+        new Thread() {
+            public void run() {
+                try {
+                    bMap = original.copy(Bitmap.Config.ARGB_8888, true);
+
+                    if (maConfig.isNiveauDeGris()) {
+                        bMap = convertionNiveauDeGris(bMap);
+                    }
+
+                    bMap = changerLuminosite(
+                                changerContraste(
+                                        changementFlou(bMap, maConfig.getAcuite()),
+                                    maConfig.getContraste()),
+                                maConfig.getLuminosite());
+                    image.setImageBitmap(bMap);
+                } catch (Exception e) {
+                }
+                progDailog.dismiss();
+            }
+        }.start();
     }
 
     /**
@@ -394,7 +487,7 @@ public class Controleur extends Activity {
                 Log.i("A propos", "A propos");
                 new AlertDialog.Builder(this)
                         .setTitle("À propos")
-                        .setMessage("Simulateur Basse Vision ©\n\nVersion application : 0.2")
+                        .setMessage("Simulateur Basse Vision ©\n\nVersion application : 0.3")
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // ne rien faire
@@ -418,6 +511,7 @@ public class Controleur extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
+                imageChargee = false;
                 mettreValeursDefaut();
                 Uri selectedImageUri = data.getData();
                 String selectedImagePath = getPath(selectedImageUri);
@@ -451,8 +545,36 @@ public class Controleur extends Activity {
                 image.setImageBitmap(bMap);
                 original = bMap;
                 imageChargee = true;
+                activerElements();
+            } else if (requestCode == SELECT_CONFIG) {
+                Serializer serializer = new Persister();
+                Uri selectedConfigUri = data.getData();
+                String selectedConfigPath = getPath(selectedConfigUri);
+                File monXML = new File(selectedConfigPath);
+                try {
+                    serializer.read(maConfig, monXML);
+                    Toast.makeText(Controleur.this, "Configuration importée",
+                            Toast.LENGTH_LONG).show();
+                    mettreAJourIHM();
+                    mettreAJourImage();
+                } catch (Exception e) {
+                    Toast.makeText(Controleur.this, "Erreur importation",
+                            Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
             }
         }
+    }
+
+    /**
+     * Met à jour l'IHM en fonction des valeurs de maConfig
+     */
+    public void mettreAJourIHM() {
+        String acuite = Double.toString(maConfig.getAcuite());
+        acuiteText.setText(acuite.toCharArray(), 0, acuite.length());
+        niveauDeGrisCB.setChecked(maConfig.isNiveauDeGris());
+        contrasteSB.setProgress(maConfig.getContrasteSB());
+        luminositeSB.setProgress(maConfig.getLuminositeSB());
     }
 
     /**
@@ -464,12 +586,34 @@ public class Controleur extends Activity {
         if (valeur != 10) {
             Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
             Utils.bitmapToMat(src, tmp);
-            Double size = 100 - (valeur/10 * 100);
-            if (size % 2 == 0) {
+            Double size = 0.;
+            /*size = Math.exp(10.0 - valeur) / COEFFICIENT_FLOU;
+            if (Math.floor(size) % 2 != 1) {
                 size ++;
+            }*/
+            if (valeur >= 6) {
+                size = 1.;
+            } else if (valeur >= 4) {
+                size = 1.8;
+            } else if (valeur >= 3) {
+                size = 3.;
+            } else if (valeur >= 2) {
+                size = 9.1;
+            } else if (valeur >= 1.6) {
+                size = 9.9;
+            } else if (valeur >= 1.3) {
+                size = 11.9;
+            } else if (valeur >= 1) {
+                size = 13.;
+            } else if (valeur >= .5) {
+                size = 49.;
+            } else if (valeur >= .1) {
+                size = 199.;
+            } else if (valeur < .1) {
+                size = 219.;
             }
+            Log.i("Acuite", size.toString());
             org.opencv.core.Size s = new Size(size, size);
-            Log.i("acuite", size+"");
             Imgproc.GaussianBlur(tmp, tmp, s, 0, 0);
             Utils.matToBitmap(tmp, src);
         }
@@ -496,10 +640,12 @@ public class Controleur extends Activity {
      * @return bitmap avec nouvelle luminosite
      */
     public static Bitmap changerLuminosite(Bitmap src, int valeur) {
-        Mat imageMat = new Mat(src.getHeight(), src.getWidth(), CvType.CV_8UC1);
-        Utils.bitmapToMat(src, imageMat);
-        imageMat.convertTo(imageMat, -1, 1, valeur);
-        Utils.matToBitmap(imageMat, src);
+        if (valeur != 0) {
+            Mat imageMat = new Mat(src.getHeight(), src.getWidth(), CvType.CV_8UC1);
+            Utils.bitmapToMat(src, imageMat);
+            imageMat.convertTo(imageMat, -1, 1, valeur);
+            Utils.matToBitmap(imageMat, src);
+        }
         return src;
     }
 
@@ -510,60 +656,85 @@ public class Controleur extends Activity {
      * @return bitmap avec nouvelle contraste
      */
     public static Bitmap changerContraste(Bitmap src, double valeur) {
-        // image size
-        int width = src.getWidth();
-        int height = src.getHeight();
-        // create output bitmap
-        Bitmap bmOut = Bitmap.createBitmap(width, height, src.getConfig());
-        // color information
-        int A, R, G, B;
-        int pixel;
-        // get contrast value
-        double contrast = Math.pow((100 + valeur) / 100, 2);
+        if (valeur != 0) {
+            // image size
+            int width = src.getWidth();
+            int height = src.getHeight();
+            // create output bitmap
+            Bitmap bmOut = Bitmap.createBitmap(width, height, src.getConfig());
 
-        // scan through all pixels
-        for(int x = 0; x < width; ++x) {
-            for(int y = 0; y < height; ++y) {
-                // get pixel color
-                pixel = src.getPixel(x, y);
-                A = Color.alpha(pixel);
-                // apply filter contrast for every channel R, G, B
-                R = Color.red(pixel);
-                R = (int)(((((R / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
-                if(R < 0) { R = 0; }
-                else if(R > 255) { R = 255; }
+            // color information
+            int A, R, G, B;
+            int pixel;
+            // get contrast value
+            double contrast = Math.pow((100 + valeur) / 100, 2);
 
-                G = Color.green(pixel);
-                G = (int)(((((G / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
-                if(G < 0) { G = 0; }
-                else if(G > 255) { G = 255; }
+            // scan through all pixels
+            for (int x = 0; x < width; ++x) {
+                for (int y = 0; y < height; ++y) {
+                    // get pixel color
+                    pixel = src.getPixel(x, y);
+                    A = Color.alpha(pixel);
+                    // apply filter contrast for every channel R, G, B
+                    R = Color.red(pixel);
+                    R = (int) (((((R / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
+                    if (R < 0) {
+                        R = 0;
+                    } else if (R > 255) {
+                        R = 255;
+                    }
 
-                B = Color.blue(pixel);
-                B = (int)(((((B / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
-                if(B < 0) { B = 0; }
-                else if(B > 255) { B = 255; }
+                    G = Color.green(pixel);
+                    G = (int) (((((G / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
+                    if (G < 0) {
+                        G = 0;
+                    } else if (G > 255) {
+                        G = 255;
+                    }
 
-                // set new pixel color to output bitmap
-                bmOut.setPixel(x, y, Color.argb(A, R, G, B));
+                    B = Color.blue(pixel);
+                    B = (int) (((((B / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
+                    if (B < 0) {
+                        B = 0;
+                    } else if (B > 255) {
+                        B = 255;
+                    }
+
+                    // set new pixel color to output bitmap
+                    bmOut.setPixel(x, y, Color.argb(A, R, G, B));
+                }
             }
+            return bmOut;
         }
         // return final image
-        return bmOut;
+        return src;
     }
 
     /**
      * Remet les valeurs par défaut quand on charge une image
      */
     private void mettreValeursDefaut () {
+        acuiteText.setText("10".toCharArray(), 0, 2);
+        maConfig.setAcuite(10.0);
+
         scotomeSB.setProgress(0);
         tubulaireSB.setProgress(100);
         hemiaSB.setProgress(100);
+
         contrasteSB.setProgress(100);
+        maConfig.setContrasteSB(100);
+        maConfig.setContraste(0);
+
         luminositeSB.setProgress(50);
+        maConfig.setLuminositeSB(50);
+        maConfig.setLuminosite(0);
+
         normalRB.setChecked(true);
+
         niveauDeGrisCB.setChecked(false);
+        maConfig.setIsNiveauDeGris(false);
+
         miseAJourSliders();
-        acuiteText.setText("10".toCharArray(), 0, 2);
     }
 
     /**
@@ -635,5 +806,31 @@ public class Controleur extends Activity {
         }
         // this is our fallback here
         return uri.getPath();
+    }
+
+    public void desactiverElements() {
+        acuiteText.setEnabled(false);
+        normalRB.setEnabled(false);
+        scotomeRB.setEnabled(false);
+        tubuRB.setEnabled(false);
+        hemiaRB.setEnabled(false);
+        contrasteSB.setEnabled(false);
+        luminositeSB.setEnabled(false);
+        niveauDeGrisCB.setEnabled(false);
+        importButton.setEnabled(false);
+        exportButton.setEnabled(false);
+    }
+
+    private void activerElements() {
+        acuiteText.setEnabled(true);
+        normalRB.setEnabled(true);
+        scotomeRB.setEnabled(true);
+        hemiaRB.setEnabled(true);
+        tubuRB.setEnabled(true);
+        contrasteSB.setEnabled(true);
+        luminositeSB.setEnabled(true);
+        niveauDeGrisCB.setEnabled(true);
+        importButton.setEnabled(true);
+        exportButton.setEnabled(true);
     }
 }
