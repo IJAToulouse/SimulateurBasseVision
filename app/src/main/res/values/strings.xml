@@ -20,9 +20,9 @@
     </string-array>
 
     <string-array name="hemia_arrays">
-        <item>"???"</item>
-        <item>"????"</item>
-        <item>"?????"</item>
+        <item>"Gauche"</item>
+        <item>"Droite"</item>
+        <item>"Haut"</item>
     </string-array>
 
 </resources>

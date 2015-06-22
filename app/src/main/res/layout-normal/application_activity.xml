@@ -95,14 +95,13 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="wrap_content"
+                    android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_scotome"
-                    android:splitTrack="false"
-                    android:layout_weight="0.06" />
+                    android:splitTrack="false" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="30dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:text="0"
@@ -128,15 +127,15 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="match_parent"
+                    android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_tubulaire"
                     android:progress="100"
                     android:splitTrack="false"
-                    android:layout_weight="1" />
+                    android:layout_weight="0" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="30dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:text="100"
@@ -162,16 +161,15 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="wrap_content"
+                    android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_hemia"
                     android:progress="100"
                     android:splitTrack="false"
-                    android:layout_weight="1"
                     android:indeterminate="false" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="30dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:text="100"
@@ -290,8 +288,8 @@
 
             <LinearLayout
                 android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="91dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:weightSum="1">
 
                 <Button
@@ -314,13 +312,24 @@
         </RadioGroup>
     </ScrollView>
 
-    <ImageView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/image"
-        android:layout_gravity="right|center_vertical"
-        android:layout_weight="0"
-        android:src="@drawable/image_file_icon"
-        android:visibility="visible" />
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/image"
+            android:layout_gravity="right|center_vertical"
+            android:layout_weight="0"
+            android:src="@drawable/image_file_icon"/>
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/calque"
+            android:focusableInTouchMode="true"
+            android:src="@drawable/transparent"/>
+    </RelativeLayout>
 
 </LinearLayout>

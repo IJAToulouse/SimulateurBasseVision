@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -49,6 +52,7 @@ import org.simpleframework.xml.core.Persister;
 import java.io.File;
 
 import static org.opencv.core.Core.circle;
+import static org.opencv.core.Core.rectangle;
 
 /**
  * Created by l.bled on 19/05/2015.
@@ -60,13 +64,13 @@ public class Controleur extends Activity {
     private static final int SELECT_PICTURE = 1, SELECT_CONFIG = 2;
 
     private Configuration maConfig = new Configuration();
-    private boolean imageChargee = false;
-    private ImageView image;
-    private Bitmap bMap;
-    private Bitmap original;
+    private boolean imageChargee = false, fromUser =  true;
+    private ImageView image, calque;
+    private Bitmap bMap, original, bCalque, calqueOriginal;
     private TextView tubulaireValue, scotomeValue, hemiaValue;
     private SeekBar scotomeSB, tubulaireSB, hemiaSB, contrasteSB, luminositeSB;
     private RadioButton normalRB, scotomeRB, tubuRB, hemiaRB;
+    private RadioGroup radioGroup;
     private Spinner hemiaSpinner;
     private CheckBox niveauDeGrisCB;
     private EditText acuiteText;
@@ -122,8 +126,9 @@ public class Controleur extends Activity {
         //fullscreen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        hemiaSpinner = (Spinner)findViewById(R.id.spinner_hemia);
+        hemiaSpinner = (Spinner)findViewById(R.id.spinner_hemianopsie);
         image = (ImageView)findViewById(R.id.image);
+        calque = (ImageView)findViewById(R.id.calque);
         normalRB = (RadioButton)findViewById(R.id.radioButton_normal);
         scotomeRB = (RadioButton)findViewById(R.id.radioButton_scotome);
         tubuRB = (RadioButton)findViewById(R.id.radioButton_tubulaire);
@@ -142,6 +147,8 @@ public class Controleur extends Activity {
                 startActivityForResult(galleryIntent, SELECT_PICTURE);
             }
         });
+
+
 
         /**
          * Listener pour le bouton exporter
@@ -200,8 +207,9 @@ public class Controleur extends Activity {
             public void onClick(View v) {
                 if (imageChargee) {
                     Intent explorerIntent = new Intent(
-                            Intent.ACTION_GET_CONTENT);
-                    explorerIntent.setType("file/xml");
+                            Intent.ACTION_PICK);
+                    //explorerIntent.putExtra("CONTENT_TYPE", "file/*");
+                    explorerIntent.setAction("com.sec.android.app.myfiles.PICK_DATA");
                     try {
                         startActivityForResult(explorerIntent, SELECT_CONFIG);
                     } catch (android.content.ActivityNotFoundException ex) {
@@ -212,16 +220,18 @@ public class Controleur extends Activity {
             }
         });
 
-        RadioGroup radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
+        radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 miseAJourSliders();
-                maConfig.setMonRadioGroup(group);
-                mettreValeursDefautChampVisuel();
+                calque.setImageBitmap(calqueOriginal);
+                // On met seulement les valeurs par défaut si c'est un changement direct de l'utilisateur (et non l'importation)
+                if (fromUser) {
+                    mettreValeursDefautChampVisuel();
+                }
             }
         });
-
 
         acuiteText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -283,20 +293,19 @@ public class Controleur extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                int valeur = seekBar.getProgress();
-                Log.i("Scotome", valeur+"");
-                bMap = original.copy(Bitmap.Config.ARGB_8888, true);
-                Mat tmp = new Mat(bMap.getWidth(), bMap.getHeight(), CvType.CV_8UC1);
-                Utils.bitmapToMat(bMap, tmp);
-                //Double to Int -> Double > String > Int
-                valeur = Integer.parseInt(Double.toString(Math.floor(valeur * COEFFICIENT_SCOTOME)));
-                circle(tmp,
-                        new Point(tmp.width() / 2, tmp.height() / 2),
-                        valeur,
-                        new Scalar(235, 235, 235, 50),
-                        -1);
-                Utils.matToBitmap(tmp, bMap);
-                image.setImageBitmap(bMap);
+                if (imageChargee) {
+                    int valeur = seekBar.getProgress();
+                    //On met à jour que si la valeur change
+                    if (maConfig.getScotomeSB() != valeur) {
+                        //Double to Int : Double -> String -> Int
+                        Double valeurDouble = Math.floor(valeur * COEFFICIENT_SCOTOME);
+                        String valeurString = Double.toString(valeurDouble);
+                        valeurString = valeurString.substring(0, valeurString.length() - 2); // on enlève le ".0" à la fin
+                        maConfig.setScotome(Integer.parseInt(valeurString));
+                        maConfig.setScotomeSB(valeur);
+                        mettreAJourCalque();
+                    }
+                }
             }
         });
 
@@ -338,7 +347,32 @@ public class Controleur extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                if (imageChargee) {
+                    int valeur = seekBar.getProgress();
+                    //On met à jour que si la valeur change
+                    if (maConfig.getHemianopsieSB() != valeur) {
+                        maConfig.setHemianopsie((100 - valeur));
+                        maConfig.setHemianopsieSB(valeur);
+                        mettreAJourCalque();
+                    }
+                }
             }
+        });
+
+        /**
+         * Listener pour le spinner de l'hemianopsie
+         */
+        hemiaSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (imageChargee) {
+                    mettreAJourCalque();
+                    maConfig.setHemianopsieID(hemiaSpinner.getSelectedItemPosition());
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
         /**
@@ -359,11 +393,11 @@ public class Controleur extends Activity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
-                    maConfig.setContrasteSB(seekBar.getProgress());
-                    double buffer = maConfig.getContraste();
-                    maConfig.setContraste(0 - ((100 - seekBar.getProgress()) * COEFFICIENT_CONTRASTE));
+                    int valeur = seekBar.getProgress();
                     // On met à jour l'image seulement si la valeur est différente
-                    if (buffer != maConfig.getContraste()) {
+                    if (maConfig.getContrasteSB() != valeur) {
+                        maConfig.setContrasteSB(valeur);
+                        maConfig.setContraste(0 - ((100 - valeur) * COEFFICIENT_CONTRASTE));
                         mettreAJourImage();
                     }
                 }
@@ -389,17 +423,16 @@ public class Controleur extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (imageChargee) {
                     int valeur = seekBar.getProgress();
-                    maConfig.setLuminositeSB(valeur);
-                    int buffer = maConfig.getLuminosite();
-                    if (valeur > 50) {
-                        maConfig.setLuminosite((valeur - 50) * COEFFICIENT_LUMINOSITE);
-                    } else if (seekBar.getProgress() < 50) {
-                        maConfig.setLuminosite(0 - ((50 - valeur) * COEFFICIENT_LUMINOSITE));
-                    } else {
-                        maConfig.setLuminosite(0);
-                    }
-                    // On met à jour l'image seulement si la valeur est différente
-                    if (buffer != maConfig.getLuminosite()) {
+                    // Mise à jour seulement si la valeur est différente
+                    if (valeur != maConfig.getLuminositeSB()) {
+                        maConfig.setLuminositeSB(valeur);
+                        if (valeur > 50) {
+                            maConfig.setLuminosite((valeur - 50) * COEFFICIENT_LUMINOSITE);
+                        } else if (seekBar.getProgress() < 50) {
+                            maConfig.setLuminosite(0 - ((50 - valeur) * COEFFICIENT_LUMINOSITE));
+                        } else {
+                            maConfig.setLuminosite(0);
+                        }
                         mettreAJourImage();
                     }
                 }
@@ -418,7 +451,7 @@ public class Controleur extends Activity {
                 }
             }
         });
-
+        calqueOriginal = ((BitmapDrawable)calque.getDrawable()).getBitmap();
         mettreValeursDefaut();
         desactiverElements();
     }
@@ -436,6 +469,31 @@ public class Controleur extends Activity {
     }
 
     /**
+     * Met à jour le calque avec la valeur et le champs visuel sélectionné
+     */
+    private void mettreAJourCalque() {
+        final ProgressDialog progDailog = ProgressDialog.show(Controleur.this, "Chargement de l'image...",
+                "Veuillez patienter", true);
+        new Thread() {
+            public void run() {
+                try {
+                    bCalque = calqueOriginal.copy(Bitmap.Config.ARGB_8888, true);
+                    if (scotomeRB.isChecked()) {
+                        bCalque = appliquerScotome(bCalque, maConfig.getScotome());
+                    } else if (tubuRB.isChecked()) {
+
+                    } else if (hemiaRB.isChecked()) {
+                        bCalque = appliquerHemianopsie(bCalque, maConfig.getHemianopsie());
+                    }
+                    calque.setImageBitmap(bCalque);
+                } catch (Exception e) {
+                }
+                progDailog.dismiss();
+            }
+        }.start();
+    }
+
+    /**
      * Met à jour l'image avec les valeurs sélectionnés
      * Création du thread pour afficher le chargement de l'image
      */
@@ -450,14 +508,16 @@ public class Controleur extends Activity {
                     if (maConfig.isNiveauDeGris()) {
                         bMap = convertionNiveauDeGris(bMap);
                     }
-
                     bMap = changerLuminosite(
-                                changerContraste(
-                                        changementFlou(bMap, maConfig.getAcuite()),
+                            changerContraste(
+                                    changementFlou(bMap, maConfig.getAcuite()),
                                     maConfig.getContraste()),
-                                maConfig.getLuminosite());
+                            maConfig.getLuminosite());
+                    Log.i("màjImage", scotomeRB.isChecked() + " " + maConfig.getScotome());
+
                     image.setImageBitmap(bMap);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                 }
                 progDailog.dismiss();
             }
@@ -519,30 +579,37 @@ public class Controleur extends Activity {
                 Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
                 Utils.bitmapToMat(bMap, imageMat);
                 Utils.matToBitmap(imageMat, bMap);
-                Log.i("Format", (float)bMap.getHeight() /(float)bMap.getWidth()+"");
+                Log.i("Format", (float) bMap.getHeight() / (float) bMap.getWidth() + "");
                 if ((float)bMap.getHeight() /(float)bMap.getWidth() == .5625 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .5625) { //16/9
                     if (bMap.getHeight() < bMap.getWidth()) {
                         bMap = Bitmap.createScaledBitmap(bMap, 1024, 576, false);
+                        calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 1024, 576, false);
                     } else {
                         bMap = Bitmap.createScaledBitmap(bMap, 576, 1024, false);
+                        calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 576, 1024, false);
                     }
                 } else if ((float)bMap.getHeight() / (float)bMap.getWidth() == .625 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .625) { //16/10
                     if (bMap.getHeight() < bMap.getWidth()) {
                         bMap = Bitmap.createScaledBitmap(bMap, 960, 600, false);
+                        calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 960, 600, false);
                     } else {
                         bMap = Bitmap.createScaledBitmap(bMap, 600, 960, false);
+                        calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 600, 960, false);
                     }
                 } else if ((float)bMap.getHeight() / (float)bMap.getWidth() == .75 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .75) { //4/3
                     if (bMap.getHeight() < bMap.getWidth()) {
                         bMap = Bitmap.createScaledBitmap(bMap, 960, 720, false);
+                        calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 960, 720, false);
                     } else {
                         bMap = Bitmap.createScaledBitmap(bMap, 720, 960, false);
+                        calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 720, 960, false);
                     }
                 }
                 image.setImageBitmap(bMap);
+                bCalque = calqueOriginal;
                 original = bMap;
                 imageChargee = true;
                 activerElements();
@@ -557,6 +624,7 @@ public class Controleur extends Activity {
                             Toast.LENGTH_LONG).show();
                     mettreAJourIHM();
                     mettreAJourImage();
+                    mettreAJourCalque();
                 } catch (Exception e) {
                     Toast.makeText(Controleur.this, "Erreur importation",
                             Toast.LENGTH_LONG).show();
@@ -572,6 +640,20 @@ public class Controleur extends Activity {
     public void mettreAJourIHM() {
         String acuite = Double.toString(maConfig.getAcuite());
         acuiteText.setText(acuite.toCharArray(), 0, acuite.length());
+        Log.i("màjIHM", maConfig.isScotome() + " " + maConfig.getScotomeSB());
+        miseAJourSliders();
+        if (maConfig.isScotome()) {
+            fromUser = false;
+            scotomeRB.setChecked(true);
+            scotomeSB.setProgress(maConfig.getScotomeSB());
+            fromUser = true;
+        } else if (maConfig.isHemianopsie()) {
+            fromUser = false;
+            hemiaRB.setChecked(true);
+            hemiaSB.setProgress(maConfig.getHemianopsieSB());
+            hemiaSpinner.setSelection(maConfig.getHemianopsieID());
+            fromUser = true;
+        }
         niveauDeGrisCB.setChecked(maConfig.isNiveauDeGris());
         contrasteSB.setProgress(maConfig.getContrasteSB());
         luminositeSB.setProgress(maConfig.getLuminositeSB());
@@ -582,7 +664,7 @@ public class Controleur extends Activity {
      * @param src
      * @return bitmap avec flou modifié
      */
-    public static Bitmap changementFlou(Bitmap src, double valeur) {
+    private static Bitmap changementFlou(Bitmap src, double valeur) {
         if (valeur != 10) {
             Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
             Utils.bitmapToMat(src, tmp);
@@ -612,7 +694,6 @@ public class Controleur extends Activity {
             } else if (valeur < .1) {
                 size = 219.;
             }
-            Log.i("Acuite", size.toString());
             org.opencv.core.Size s = new Size(size, size);
             Imgproc.GaussianBlur(tmp, tmp, s, 0, 0);
             Utils.matToBitmap(tmp, src);
@@ -621,11 +702,77 @@ public class Controleur extends Activity {
     }
 
     /**
+     * Dessine une cercle flouté au centre de l'image avec un diamètre dépendant de valeur
+     * @param bCalque
+     * @param valeur
+     * @return bitmap avec scotome appliqué
+     */
+    private Bitmap appliquerScotome(Bitmap bCalque, int valeur) {
+        if (valeur != 0) {
+            Mat tmp = new Mat(bCalque.getWidth(), bCalque.getHeight(), CvType.CV_8UC1);
+            Utils.bitmapToMat(bCalque, tmp);
+            circle(tmp,
+                    new Point(tmp.width() / 2, tmp.height() / 2),
+                    valeur,
+                    new Scalar(235, 235, 235, 254),
+                    -1);
+            Imgproc.GaussianBlur(tmp, tmp, new org.opencv.core.Size(31, 31), 0, 0);
+            Utils.matToBitmap(tmp, bCalque);
+        }
+        return bCalque;
+    }
+
+    /**
+     *
+     * @param bCalque
+     * @param valeur
+     * @return
+     */
+    private Bitmap appliquerVisionTubulaire(Bitmap bCalque, int valeur) {
+        return bCalque;
+    }
+
+    /**
+     * Dessine un rectange à gauche ou à droite ou en haut avec une taille dépendante de valeur
+     * @param bCalque
+     * @param valeur
+     * @return
+     */
+    private Bitmap appliquerHemianopsie(Bitmap bCalque, int valeur) {
+        if (valeur != 0) {
+            Mat tmp = new Mat(bCalque.getWidth(), bCalque.getHeight(), CvType.CV_8UC1);
+            Utils.bitmapToMat(bCalque, tmp);
+            if (hemiaSpinner.getSelectedItemPosition() == 0) { // Gauche
+                rectangle(tmp,
+                        new Point(0, 0),
+                        new Point(bCalque.getWidth() * valeur / 100, bCalque.getHeight()),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            } else if (hemiaSpinner.getSelectedItemPosition() == 1) { // Droite
+                rectangle(tmp,
+                        new Point(bCalque.getWidth(), 0),
+                        new Point(bCalque.getWidth() - (bCalque.getWidth() * valeur / 100), bCalque.getHeight()),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            } else if (hemiaSpinner.getSelectedItemPosition() == 2) { // Haut
+                rectangle(tmp,
+                        new Point(0, 0),
+                        new Point(bCalque.getWidth(), bCalque.getHeight() * valeur / 100),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            }
+            Imgproc.GaussianBlur(tmp, tmp, new org.opencv.core.Size(21, 21), 0, 0);
+            Utils.matToBitmap(tmp, bCalque);
+        }
+        return bCalque;
+    }
+
+    /**
      * Convertit l'image en niveau de gris
      * @param src
      * @return bitmap en niveau de gris
      */
-    public static Bitmap convertionNiveauDeGris(Bitmap src) {
+    private static Bitmap convertionNiveauDeGris(Bitmap src) {
         Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
         Utils.bitmapToMat(src, tmp);
         Imgproc.cvtColor(tmp, tmp, Imgproc.COLOR_RGB2GRAY);
@@ -639,7 +786,7 @@ public class Controleur extends Activity {
      * @param valeur
      * @return bitmap avec nouvelle luminosite
      */
-    public static Bitmap changerLuminosite(Bitmap src, int valeur) {
+    private static Bitmap changerLuminosite(Bitmap src, int valeur) {
         if (valeur != 0) {
             Mat imageMat = new Mat(src.getHeight(), src.getWidth(), CvType.CV_8UC1);
             Utils.bitmapToMat(src, imageMat);
@@ -655,7 +802,7 @@ public class Controleur extends Activity {
      * @param valeur
      * @return bitmap avec nouvelle contraste
      */
-    public static Bitmap changerContraste(Bitmap src, double valeur) {
+    private static Bitmap changerContraste(Bitmap src, double valeur) {
         if (valeur != 0) {
             // image size
             int width = src.getWidth();
@@ -718,8 +865,12 @@ public class Controleur extends Activity {
         maConfig.setAcuite(10.0);
 
         scotomeSB.setProgress(0);
+        maConfig.setScotomeSB(0);
+        maConfig.setScotome(0);
         tubulaireSB.setProgress(100);
         hemiaSB.setProgress(100);
+        maConfig.setHemianopsieSB(100);
+        maConfig.setHemianopsie(0);
 
         contrasteSB.setProgress(100);
         maConfig.setContrasteSB(100);
@@ -750,6 +901,7 @@ public class Controleur extends Activity {
             hemiaValue.setEnabled(false);
             hemiaSpinner.setEnabled(false);
         } else if (scotomeRB.isChecked()) {
+            maConfig.setIsScotome(true);
             scotomeSB.setEnabled(true);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(false);
@@ -766,6 +918,7 @@ public class Controleur extends Activity {
             hemiaValue.setEnabled(false);
             hemiaSpinner.setEnabled(false);
         } else if (hemiaRB.isChecked()) {
+            maConfig.setIsHemianopsie(true);
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(true);
@@ -779,10 +932,17 @@ public class Controleur extends Activity {
     /**
      * Met les valeurs de sliders du champ visuel à leur valeur par défaut
      */
-    private void mettreValeursDefautChampVisuel(){
+    private void mettreValeursDefautChampVisuel() {
         scotomeSB.setProgress(0);
+        maConfig.setScotome(0);
+        maConfig.setScotomeSB(0);
         tubulaireSB.setProgress(100);
+        maConfig.setHemianopsie(0);
+        maConfig.setHemianopsieSB(100);
         hemiaSB.setProgress(100);
+        hemiaSpinner.setSelection(0);
+        maConfig.setHemianopsie(hemiaSpinner.getSelectedItemPosition());
+        mettreAJourImage();
     }
 
     /**
@@ -791,7 +951,6 @@ public class Controleur extends Activity {
     public String getPath(Uri uri) {
         // just some safety built in
         if( uri == null ) {
-            // TODO perform some logging or show user feedback
             return null;
         }
         // try to retrieve the image from the media store first
@@ -808,7 +967,7 @@ public class Controleur extends Activity {
         return uri.getPath();
     }
 
-    public void desactiverElements() {
+    private void desactiverElements() {
         acuiteText.setEnabled(false);
         normalRB.setEnabled(false);
         scotomeRB.setEnabled(false);

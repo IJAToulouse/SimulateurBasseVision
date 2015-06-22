@@ -12,16 +12,22 @@ import org.simpleframework.xml.Root;
 public class Configuration {
     @Element(name="acuite")
     private double acuite;
-    @Element(name="monRadioGroup")
-    private RadioGroup monRadioGroup;
     @Element(name="scotome")
     private int scotome;
     @Element(name="scotomeSB")
     private int scotomeSB;
+    @Element(name="isScotome")
+    private boolean isScotome;
     /*private int tubulaire;
-    private boolean isTubulaire;
+    private boolean isTubulaire;*/
+    @Element(name="hemianopsie")
     private int hemianopsie;
-    private boolean isHemianopsie;*/
+    @Element(name="hemianopsieSB")
+    private int hemianopsieSB;
+    @Element(name="isHemianopsie")
+    private boolean isHemianopsie;
+    @Element(name="hemianopsieID")
+    private int hemianopsieID;
     @Element(name="contraste")
     private double contraste;
     @Element(name="contrasteSB")
@@ -57,13 +63,18 @@ public class Configuration {
         this.scotomeSB = scotomeSB;
     }
 
-    public RadioGroup getMonRadioGroup() {
-        return monRadioGroup;
+    public boolean isScotome() {
+        return isScotome;
     }
 
-    public void setMonRadioGroup(RadioGroup monRadioGroup) {
-        this.monRadioGroup = monRadioGroup;
+    public void setIsScotome(boolean isScotome) {
+        this.isScotome = isScotome;
+        if (isScotome) {
+            //setIsTubulaire(false);
+            setIsHemianopsie(false);
+        }
     }
+
 
     /*public int getTubulaire() {
         return tubulaire;
@@ -83,7 +94,7 @@ public class Configuration {
             setIsHemianopsie(false);
             setIsScotome(false);
         }
-    }
+    }*/
 
     public int getHemianopsie() {
         return hemianopsie;
@@ -93,6 +104,14 @@ public class Configuration {
         this.hemianopsie = hemianopsie;
     }
 
+    public int getHemianopsieSB() {
+        return hemianopsieSB;
+    }
+
+    public void setHemianopsieSB(int hemianopsieSB) {
+        this.hemianopsieSB = hemianopsieSB;
+    }
+
     public boolean isHemianopsie() {
         return isHemianopsie;
     }
@@ -100,10 +119,18 @@ public class Configuration {
     public void setIsHemianopsie(boolean isHemianopsie) {
         this.isHemianopsie = isHemianopsie;
         if (isHemianopsie) {
-            setIsTubulaire(false);
+            //setIsTubulaire(false);
             setIsScotome(false);
         }
-    }*/
+    }
+
+    public int getHemianopsieID() {
+        return hemianopsieID;
+    }
+
+    public void setHemianopsieID(int hemianopsieID) {
+        this.hemianopsieID = hemianopsieID;
+    }
 
     public double getContraste() {
         return contraste;
