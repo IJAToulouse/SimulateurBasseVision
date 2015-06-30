@@ -1,7 +1,5 @@
 package ija.lbled.simulateurbassevision;
 
-import android.widget.RadioGroup;
-
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
@@ -18,8 +16,12 @@ public class Configuration {
     private int scotomeSB;
     @Element(name="isScotome")
     private boolean isScotome;
-    /*private int tubulaire;
-    private boolean isTubulaire;*/
+    @Element(name="visionTubu")
+    private int visionTubu;
+    @Element(name="visionTubuSB")
+    private int visionTubuSB;
+    @Element(name="isVisionTubu")
+    private boolean isVisionTubu;
     @Element(name="hemianopsie")
     private int hemianopsie;
     @Element(name="hemianopsieSB")
@@ -70,31 +72,38 @@ public class Configuration {
     public void setIsScotome(boolean isScotome) {
         this.isScotome = isScotome;
         if (isScotome) {
-            //setIsTubulaire(false);
+            setIsVisionTubu(false);
             setIsHemianopsie(false);
         }
     }
 
-
-    /*public int getTubulaire() {
-        return tubulaire;
+    public int getVisionTubu() {
+        return visionTubu;
     }
 
-    public void setTubulaire(int tubulaire) {
-        this.tubulaire = tubulaire;
+    public void setVisionTubu(int visionTubu) {
+        this.visionTubu = visionTubu;
     }
 
-    public boolean isTubulaire() {
-        return isTubulaire;
+    public int getVisionTubuSB() {
+        return visionTubuSB;
     }
 
-    public void setIsTubulaire(boolean isTubulaire) {
-        this.isTubulaire = isTubulaire;
-        if (isTubulaire) {
+    public void setVisionTubuSB(int visionTubuSB) {
+        this.visionTubuSB = visionTubuSB;
+    }
+
+    public boolean isVisionTubu() {
+        return isVisionTubu;
+    }
+
+    public void setIsVisionTubu(boolean isVisionTubu) {
+        this.isVisionTubu = isVisionTubu;
+        if (isVisionTubu) {
             setIsHemianopsie(false);
             setIsScotome(false);
         }
-    }*/
+    }
 
     public int getHemianopsie() {
         return hemianopsie;
@@ -119,7 +128,7 @@ public class Configuration {
     public void setIsHemianopsie(boolean isHemianopsie) {
         this.isHemianopsie = isHemianopsie;
         if (isHemianopsie) {
-            //setIsTubulaire(false);
+            setIsVisionTubu(false);
             setIsScotome(false);
         }
     }

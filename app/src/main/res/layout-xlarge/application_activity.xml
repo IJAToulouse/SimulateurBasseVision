@@ -31,26 +31,36 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
+            android:layout_gravity="center_horizontal"
+            android:background="#7ed1d1d1">
 
             <EditText
-                android:layout_width="90dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/editText_acuite"
                 android:inputType="numberDecimal"
                 android:text="10"
-                android:background="#7ed1d1d1"
                 android:textSize="18dp"
                 android:numeric="integer|decimal"
                 android:paddingLeft="40dp" />
 
             <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="/ 10"
                 android:id="@+id/textView_acuite_deno"
-                android:textSize="18dp"
+                android:textSize="18dp" />
+
+            <Space
+                android:layout_width="20dp"
+                android:layout_height="0dp"
                 android:background="#7ed1d1d1" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/spinner_distance"
+                android:entries="@array/distance_arrays" />
         </LinearLayout>
 
         <Space
@@ -175,12 +185,18 @@
                 android:layout_gravity="center_vertical|right" />
         </LinearLayout>
 
-        <Spinner
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/spinner_hemianopsie"
-            android:entries="@array/hemia_arrays"
-            android:background="@drawable/spinner_background"/>
+            android:layout_height="match_parent"
+            android:background="#7ed1d1d1">
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinner_hemianopsie"
+                android:entries="@array/hemia_arrays" />
+        </LinearLayout>
 
         <Space
             android:layout_width="match_parent"

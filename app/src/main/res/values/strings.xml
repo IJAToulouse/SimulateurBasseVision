@@ -1,22 +1,13 @@
 <resources>
     <string name="app_name">Simulateur Basse Vision</string>
     <string name="title_item_detail">Item Detail</string>
-    <string-array name="acuite_arrays">
-        <item>Normal</item>
-        <item>0.1/10</item>
-        <item>0.1/10</item>
-        <item>0.3/10</item>
-        <item>0.4/10</item>
-        <item>0.5/10</item>
-        <item>0.63/10</item>
-        <item>0.8/10</item>
-        <item>1/10</item>
-        <item>1.3/10</item>
-        <item>1.6/10</item>
-        <item>2/10</item>
-        <item>2.5/10</item>
-        <item>3.2/10</item>
-        <item>4/10</item>
+    <string-array name="distance_arrays">
+        <item>8m</item>
+        <item>4m</item>
+        <item>2m</item>
+        <item>1m</item>
+        <item>50cm</item>
+        <item>25cm</item>
     </string-array>
 
     <string-array name="hemia_arrays">

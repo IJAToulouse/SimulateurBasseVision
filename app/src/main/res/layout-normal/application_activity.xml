@@ -44,7 +44,7 @@
                     android:background="#7ed1d1d1"
                     android:textSize="13dp"
                     android:numeric="integer|decimal"
-                    android:paddingLeft="60dp" />
+                    android:paddingLeft="30dp" />
 
                 <TextView
                     android:layout_width="fill_parent"
@@ -53,6 +53,11 @@
                     android:id="@+id/textView_acuite_deno"
                     android:textSize="13dp"
                     android:background="#7ed1d1d1" />
+
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinner" />
             </LinearLayout>
 
             <Space
@@ -180,10 +185,10 @@
             <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/spinner_hemia"
-                android:spinnerMode="dropdown"
+                android:id="@+id/spinner_hemianopsie"
                 android:entries="@array/hemia_arrays"
-                android:background="@drawable/spinner_background" />
+                android:textSize="13dp"
+                android:background="@drawable/spinner_background"/>
 
             <Space
                 android:layout_width="match_parent"
