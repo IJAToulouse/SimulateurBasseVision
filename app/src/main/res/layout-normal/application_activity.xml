@@ -33,31 +33,35 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
+                android:layout_gravity="center_horizontal"
+                android:background="#7ed1d1d1">
 
                 <EditText
-                    android:layout_width="90dp"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/editText_acuite"
                     android:inputType="numberDecimal"
                     android:text="10"
-                    android:background="#7ed1d1d1"
                     android:textSize="13dp"
                     android:numeric="integer|decimal"
-                    android:paddingLeft="30dp" />
+                    android:paddingLeft="15dp" />
 
                 <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:text="/ 10"
-                    android:id="@+id/textView_acuite_deno"
-                    android:textSize="13dp"
-                    android:background="#7ed1d1d1" />
-
-                <Spinner
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/spinner" />
+                    android:text="/ 10"
+                    android:id="@+id/textView_acuite_deno"
+                    android:textSize="13dp" />
+                <Space
+                    android:layout_width="20dp"
+                    android:layout_height="0dp" />
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/spinner_distance"
+                    android:entries="@array/distance_arrays"
+                    android:textSize="13dp"/>
             </LinearLayout>
 
             <Space
@@ -100,18 +104,21 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="140dp"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_scotome"
-                    android:splitTrack="false" />
+                    android:splitTrack="false"
+                    android:max="20" />
 
                 <TextView
                     android:layout_width="30dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="0"
+                    android:text="0°"
                     android:id="@+id/textView_scotome"
-                    android:layout_gravity="center_vertical|right" />
+                    android:layout_gravity="center_vertical|right"
+                    android:gravity="right"
+                    android:textSize="13dp" />
             </LinearLayout>
 
             <RadioButton
@@ -132,21 +139,24 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="140dp"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_tubulaire"
                     android:progress="100"
                     android:splitTrack="false"
-                    android:layout_weight="0" />
+                    android:layout_weight="0"
+                    android:max="20" />
 
                 <TextView
                     android:layout_width="30dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="100"
+                    android:text="20°"
                     android:id="@+id/textView_tubu"
                     android:layout_gravity="center_vertical|right"
-                    android:editable="true" />
+                    android:editable="true"
+                    android:gravity="right"
+                    android:textSize="13dp" />
             </LinearLayout>
 
             <RadioButton
@@ -166,7 +176,7 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="140dp"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_hemia"
                     android:progress="100"
@@ -174,21 +184,28 @@
                     android:indeterminate="false" />
 
                 <TextView
-                    android:layout_width="30dp"
+                    android:layout_width="35dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="100"
+                    android:text="100%"
+                    android:textSize="13dp"
                     android:id="@+id/textView_hemia"
                     android:layout_gravity="center_vertical|right" />
             </LinearLayout>
 
-            <Spinner
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinner_hemianopsie"
-                android:entries="@array/hemia_arrays"
-                android:textSize="13dp"
-                android:background="@drawable/spinner_background"/>
+                android:layout_height="match_parent"
+                android:background="#7ed1d1d1">
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinner_hemianopsie"
+                    android:entries="@array/hemia_arrays"
+                    android:textSize="13dp" />
+            </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"
@@ -212,7 +229,7 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="wrap_content"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_contraste"
                     android:progress="100"
@@ -221,13 +238,14 @@
                     android:indeterminate="false" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="35dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="100"
+                    android:text="100%"
                     android:id="@+id/textView_contraste_sb"
                     android:layout_gravity="center_vertical|right"
-                    android:textSize="13dp" />
+                    android:textSize="13dp"
+                    android:gravity="right" />
             </LinearLayout>
 
             <Space
@@ -251,7 +269,7 @@
                 android:background="#7ed1d1d1">
 
                 <SeekBar
-                    android:layout_width="wrap_content"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/seekBar_luminosite"
                     android:progress="0"
@@ -261,13 +279,14 @@
                     android:max="100" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="35dp"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="50"
+                    android:text="50%"
                     android:id="@+id/textView_luminosite_sb"
                     android:layout_gravity="center_vertical|right"
-                    android:textSize="13dp" />
+                    android:textSize="13dp"
+                    android:gravity="right" />
             </LinearLayout>
 
             <Space

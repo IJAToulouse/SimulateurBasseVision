@@ -58,21 +58,19 @@ import static org.opencv.core.Core.rectangle;
  */
 public class Controleur extends Activity {
 
-    private static final int COEFFICIENT_LUMINOSITE_INF = 3, COEFFICIENT_VISION_TUBULAIRE = 5;
-    private static final double COEFFICIENT_CONTRASTE = .85, COEFFICIENT_SCOTOME= 2.5, COEFFICIENT_LUMI_SUP = 4.5;
+    private double acuite;
+    private static final int COEFFICIENT_LUMINOSITE_INF = 3;
+    private static final double COEFFICIENT_CONTRASTE = .85, COEFFICIENT_SCOTOME= 12.5, COEFFICIENT_LUMI_SUP = 4.5, COEFFICIENT_VISION_TUBULAIRE = 12.5;
     private static final int SELECT_PICTURE = 1, SELECT_CONFIG = 2;
 
     private Configuration maConfig = new Configuration();
     private boolean imageChargee = false, fromUser =  true;
     private ImageView image, calque;
     private Bitmap bMap, original, bCalque, calqueOriginal;
-    private TextView tubulaireValue;
-    private TextView scotomeValue;
-    private TextView hemiaValue;
+    private TextView tubulaireValue, scotomeValue, hemiaValue, acuiteDeno, contrasteValue, luminositeValue;
     private SeekBar scotomeSB, tubulaireSB, hemiaSB, contrasteSB, luminositeSB;
     private RadioButton normalRB, scotomeRB, tubuRB, hemiaRB;
-    private RadioGroup radioGroup;
-    private Spinner hemiaSpinner;
+    private Spinner hemiaSpinner, distanceSpinner;
     private CheckBox niveauDeGrisCB;
     private EditText acuiteText;
     private Button importButton, exportButton;
@@ -127,7 +125,9 @@ public class Controleur extends Activity {
         //fullscreen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         hemiaSpinner = (Spinner)findViewById(R.id.spinner_hemianopsie);
+        distanceSpinner = (Spinner)findViewById(R.id.spinner_distance);
         image = (ImageView)findViewById(R.id.image);
         calque = (ImageView)findViewById(R.id.calque);
         normalRB = (RadioButton)findViewById(R.id.radioButton_normal);
@@ -136,6 +136,13 @@ public class Controleur extends Activity {
         hemiaRB = (RadioButton)findViewById(R.id.radioButton_hemianopsie);
         niveauDeGrisCB = (CheckBox)findViewById(R.id.checkBox_niveauDeGris);
         acuiteText = (EditText)findViewById(R.id.editText_acuite);
+        acuiteDeno = (TextView)findViewById(R.id.textView_acuite_deno);
+        luminositeValue = (TextView)findViewById(R.id.textView_luminosite_sb);
+        contrasteValue = (TextView)findViewById(R.id.textView_contraste_sb);
+
+        /**
+         * Listener pour le bouton pour importer l'image
+         */
         findViewById(R.id.button_importer).setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
 
@@ -148,7 +155,6 @@ public class Controleur extends Activity {
                 startActivityForResult(galleryIntent, SELECT_PICTURE);
             }
         });
-
 
 
         /**
@@ -226,12 +232,15 @@ public class Controleur extends Activity {
         /**
          * Listener pour lorsqu'on coche quelque chose de différent dans le radio group
          */
-        radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
+        RadioGroup radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 miseAJourSliders();
                 calque.setImageBitmap(calqueOriginal);
+                if (tubuRB.isChecked()) {
+                    mettreAJourCalque();
+                }
                 // On met seulement les valeurs par défaut si c'est un changement direct de l'utilisateur (et non l'importation)
                 if (fromUser) {
                     mettreValeursDefautChampVisuel();
@@ -239,6 +248,9 @@ public class Controleur extends Activity {
             }
         });
 
+        /**
+         * Sert à cacher le clavier lorsqu'on le touche à côté de celui-ci
+         */
         acuiteText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -272,6 +284,8 @@ public class Controleur extends Activity {
                             // On recharge l'image seulement si l'acuité a changé
                             if (valeur != maConfig.getAcuite()) {
                                 maConfig.setAcuite(valeur);
+                                acuite = maConfig.getAcuite();
+                                distanceSpinner.setSelection(1);
                                 mettreAJourImage();
                             }
                         }
@@ -283,6 +297,43 @@ public class Controleur extends Activity {
         });
 
         /**
+         * Listener pour le spinner de la distance
+         */
+        distanceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0:
+                        acuite = maConfig.getAcuite() / 2; //8m
+                        break;
+                    case 1:
+                        acuite = maConfig.getAcuite(); //4m (defaut)
+                        break;
+                    case 2:
+                        acuite = maConfig.getAcuite() * 2; //2m
+                        break;
+                    case 3:
+                        acuite = maConfig.getAcuite() * 4; //1m
+                        break;
+                    case 4 : acuite = maConfig.getAcuite() * 8; //.5cm
+                        break;
+                    case 5 : acuite = maConfig.getAcuite() * 16; //.25cm
+                        break;
+                    default:
+                }
+                if (acuite > 10) {
+                    acuite = 10;
+                }
+                Log.i("ACUITE", acuite+"");
+                mettreAJourImage();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        /**
          * Listener pour la SeekBar Scotome et le texte associé
          */
         scotomeValue = (TextView)findViewById(R.id.textView_scotome);
@@ -290,7 +341,7 @@ public class Controleur extends Activity {
         scotomeSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                scotomeValue.setText(String.valueOf(progress));
+                scotomeValue.setText(String.valueOf(progress)+"°");
             }
 
             @Override
@@ -305,9 +356,7 @@ public class Controleur extends Activity {
                     if (maConfig.getScotomeSB() != valeur) {
                         //Double to Int : Double -> String -> Int
                         Double valeurDouble = Math.floor(valeur * COEFFICIENT_SCOTOME);
-                        String valeurString = Double.toString(valeurDouble);
-                        valeurString = valeurString.substring(0, valeurString.length() - 2); // on enlève le ".0" à la fin
-                        maConfig.setScotome(Integer.parseInt(valeurString));
+                        maConfig.setScotome(doubleToInt(valeurDouble));
                         maConfig.setScotomeSB(valeur);
                         mettreAJourCalque();
                     }
@@ -324,7 +373,7 @@ public class Controleur extends Activity {
         tubulaireSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                tubulaireValue.setText(String.valueOf(progress));
+                tubulaireValue.setText(String.valueOf(progress)+"°");
             }
 
             @Override
@@ -336,8 +385,9 @@ public class Controleur extends Activity {
                 if (imageChargee) {
                     int valeur = seekBar.getProgress();
                     if (maConfig.getVisionTubuSB() != valeur) {
+                        Double valeurDouble = Math.floor(valeur * COEFFICIENT_VISION_TUBULAIRE);
+                        maConfig.setVisionTubu(doubleToInt(valeurDouble));
                         maConfig.setVisionTubuSB(valeur);
-                        maConfig.setVisionTubu(valeur * COEFFICIENT_VISION_TUBULAIRE);
                         mettreAJourCalque();
                     }
                 }
@@ -352,7 +402,7 @@ public class Controleur extends Activity {
         hemiaSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                hemiaValue.setText(String.valueOf(progress));
+                hemiaValue.setText(String.valueOf(progress)+"%");
             }
 
             @Override
@@ -380,7 +430,9 @@ public class Controleur extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (imageChargee) {
-                    mettreAJourCalque();
+                    if (maConfig.getHemianopsieSB() != 100) {
+                        mettreAJourCalque();
+                    }
                     maConfig.setHemianopsieID(hemiaSpinner.getSelectedItemPosition());
                 }
             }
@@ -397,7 +449,7 @@ public class Controleur extends Activity {
         contrasteSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                contrasteValue.setText(String.valueOf(progress));
+                contrasteValue.setText(String.valueOf(progress)+"%");
             }
 
             @Override
@@ -426,7 +478,7 @@ public class Controleur extends Activity {
         luminositeSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                luminositeValue.setText(String.valueOf(progress));
+                luminositeValue.setText(String.valueOf(progress)+"%");
             }
 
             @Override
@@ -442,9 +494,7 @@ public class Controleur extends Activity {
                         maConfig.setLuminositeSB(valeur);
                         if (valeur > 50) {
                             Double valeurDouble = Math.floor((valeur - 50) * COEFFICIENT_LUMI_SUP);
-                            String valeurString = Double.toString(valeurDouble);
-                            valeurString = valeurString.substring(0, valeurString.length() - 2); // on enlève le ".0" à la fin
-                            maConfig.setLuminosite(Integer.parseInt(valeurString));
+                            maConfig.setLuminosite(doubleToInt(valeurDouble));
                            // maConfig.setLuminosite((valeur - 50) * COEFFICIENT_LUMINOSITE);
                         } else if (seekBar.getProgress() < 50) {
                             maConfig.setLuminosite(0 - ((50 - valeur) * COEFFICIENT_LUMINOSITE_INF));
@@ -472,6 +522,12 @@ public class Controleur extends Activity {
         calqueOriginal = ((BitmapDrawable)calque.getDrawable()).getBitmap();
         mettreValeursDefaut();
         desactiverElements();
+    }
+
+    private int doubleToInt(Double valeurDouble) {
+        String valeurString = Double.toString(valeurDouble);
+        valeurString = valeurString.substring(0, valeurString.length() - 2); // on enlève le ".0" à la fin
+        return Integer.parseInt(valeurString);
     }
 
     /**
@@ -528,11 +584,9 @@ public class Controleur extends Activity {
                     }
                     bMap = changerLuminosite(
                             changerContraste(
-                                    changementFlou(bMap, maConfig.getAcuite()),
+                                    changementFlou(bMap, acuite),
                                     maConfig.getContraste()),
                             maConfig.getLuminosite());
-                    Log.i("màjImage", scotomeRB.isChecked() + " " + maConfig.getScotome());
-
                     image.setImageBitmap(bMap);
                 }
                 catch (Exception e) {
@@ -647,6 +701,7 @@ public class Controleur extends Activity {
                     serializer.read(maConfig, monXML);
                     Toast.makeText(Controleur.this, "Configuration importée",
                             Toast.LENGTH_LONG).show();
+                    acuite = maConfig.getAcuite();
                     mettreAJourIHM();
                     mettreAJourImage();
                     mettreAJourCalque();
@@ -664,6 +719,7 @@ public class Controleur extends Activity {
      */
     public void mettreAJourIHM() {
         String acuite = Double.toString(maConfig.getAcuite());
+        distanceSpinner.setSelection(1);
         acuiteText.setText(acuite.toCharArray(), 0, acuite.length());
         if (maConfig.isScotome()) {
             fromUser = false;
@@ -697,7 +753,7 @@ public class Controleur extends Activity {
      * @return bitmap avec flou modifié
      */
     private Bitmap changementFlou(Bitmap src, double valeur) {
-        if (valeur != 10) {
+        if (valeur < 10) {
             Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
             Utils.bitmapToMat(src, tmp);
             Double size = 0.;
@@ -924,13 +980,15 @@ public class Controleur extends Activity {
     private void mettreValeursDefaut () {
         acuiteText.setText("10".toCharArray(), 0, 2);
         maConfig.setAcuite(10.0);
+        acuite = maConfig.getAcuite();
+        distanceSpinner.setSelection(1);
 
         scotomeSB.setProgress(0);
         maConfig.setScotomeSB(0);
         maConfig.setScotome(0);
         tubulaireSB.setProgress(100);
-        maConfig.setVisionTubu(100);
-        maConfig.setVisionTubuSB(100);
+        maConfig.setVisionTubu(250); //20 * 12.5 = 250
+        maConfig.setVisionTubuSB(20);
         hemiaSB.setProgress(100);
         maConfig.setHemianopsieSB(100);
         maConfig.setHemianopsie(0);
@@ -1005,8 +1063,8 @@ public class Controleur extends Activity {
         maConfig.setScotomeSB(0);
 
         tubulaireSB.setProgress(100);
-        maConfig.setVisionTubu(100);
-        maConfig.setVisionTubuSB(100);
+        maConfig.setVisionTubu(250); // 20 * 12.5 = 250
+        maConfig.setVisionTubuSB(20);
 
         hemiaSB.setProgress(100);
         maConfig.setHemianopsie(0);
@@ -1037,27 +1095,41 @@ public class Controleur extends Activity {
         return uri.getPath();
     }
 
+    /**
+     * Désactive tous les éléments de l'IHM
+     */
     private void desactiverElements() {
         acuiteText.setEnabled(false);
+        acuiteDeno.setEnabled(false);
+        distanceSpinner.setEnabled(false);
         normalRB.setEnabled(false);
         scotomeRB.setEnabled(false);
         tubuRB.setEnabled(false);
         hemiaRB.setEnabled(false);
         contrasteSB.setEnabled(false);
+        contrasteValue.setEnabled(false);
         luminositeSB.setEnabled(false);
+        luminositeValue.setEnabled(false);
         niveauDeGrisCB.setEnabled(false);
         importButton.setEnabled(false);
         exportButton.setEnabled(false);
     }
 
+    /**
+     * Active tous les éléments de l'IHM
+     */
     private void activerElements() {
         acuiteText.setEnabled(true);
+        acuiteDeno.setEnabled(true);
+        distanceSpinner.setEnabled(true);
         normalRB.setEnabled(true);
         scotomeRB.setEnabled(true);
         hemiaRB.setEnabled(true);
         tubuRB.setEnabled(true);
         contrasteSB.setEnabled(true);
+        contrasteValue.setEnabled(true);
         luminositeSB.setEnabled(true);
+        luminositeValue.setEnabled(true);
         niveauDeGrisCB.setEnabled(true);
         importButton.setEnabled(true);
         exportButton.setEnabled(true);

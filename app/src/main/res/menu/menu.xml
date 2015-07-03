@@ -10,5 +10,4 @@
         android:icon="@drawable/dialog_information"
         android:showAsAction="always"
         android:title=""/>
-
 </menu>

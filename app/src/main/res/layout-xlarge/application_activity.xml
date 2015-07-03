@@ -7,331 +7,343 @@
     android:descendantFocusability="beforeDescendants"
     android:focusableInTouchMode="true">
 
-    <RadioGroup
-        android:layout_width="229dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|left"
-        android:id="@+id/radioGroup" >
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="  Acuité visuelle"
-            android:id="@+id/textView_acuite"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:background="#7ed1d1d1" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="#7ed1d1d1">
-
-            <EditText
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/editText_acuite"
-                android:inputType="numberDecimal"
-                android:text="10"
-                android:textSize="18dp"
-                android:numeric="integer|decimal"
-                android:paddingLeft="40dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="/ 10"
-                android:id="@+id/textView_acuite_deno"
-                android:textSize="18dp" />
-
-            <Space
-                android:layout_width="20dp"
-                android:layout_height="0dp"
-                android:background="#7ed1d1d1" />
-
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/spinner_distance"
-                android:entries="@array/distance_arrays" />
-        </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="  Champ visuel"
-            android:id="@+id/textView_champVisuel"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:background="#7ed1d1d1" />
-
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Normal"
-            android:id="@+id/radioButton_normal"
-            android:textSize="18dp"
-            android:checked="true"
-            android:background="#7ed1d1d1"/>
-
-        <RadioButton
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Scotome"
-            android:id="@+id/radioButton_scotome"
-            android:singleLine="true"
-            android:textSize="18dp"
-            android:background="#7ed1d1d1"/>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="#7ed1d1d1"
-            android:weightSum="1">
-
-            <SeekBar
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekBar_scotome"
-                android:splitTrack="false" />
-
-            <TextView
-                android:layout_width="30dp"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="0"
-                android:id="@+id/textView_scotome"
-                android:layout_gravity="center_vertical|right" />
-        </LinearLayout>
-
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Vision Tubulaire"
-            android:id="@+id/radioButton_tubulaire"
-            android:textSize="18dp"
-            android:checked="false"
-            android:background="#7ed1d1d1"
-            android:layout_gravity="right" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="#7ed1d1d1">
-
-            <SeekBar
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekBar_tubulaire"
-                android:progress="100"
-                android:splitTrack="false" />
-
-            <TextView
-                android:layout_width="30dp"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="100"
-                android:id="@+id/textView_tubu"
-                android:layout_gravity="center_vertical|right"
-                android:editable="true" />
-        </LinearLayout>
-
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Hémianopsie"
-            android:id="@+id/radioButton_hemianopsie"
-            android:textSize="18dp"
-            android:checked="false"
-            android:background="#7ed1d1d1"/>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="#7ed1d1d1">
-
-            <SeekBar
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekBar_hemia"
-                android:progress="100"
-                android:splitTrack="false"
-                android:indeterminate="false" />
-
-            <TextView
-                android:layout_width="30dp"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="100"
-                android:id="@+id/textView_hemia"
-                android:layout_gravity="center_vertical|right" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#7ed1d1d1">
-
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinner_hemianopsie"
-                android:entries="@array/hemia_arrays" />
-        </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp"
-            android:layout_gravity="center_horizontal"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="  Contraste"
-            android:id="@+id/textView_contraste"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:editable="false"
-            android:background="#7ed1d1d1"/>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#7ed1d1d1">
-
-            <SeekBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekBar_contraste"
-                android:progress="100"
-                android:splitTrack="false"
-                android:layout_weight="1"
-                android:indeterminate="false" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="100"
-                android:id="@+id/textView_contraste_sb"
-                android:layout_gravity="center_vertical|right"/>
-        </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="  Luminosité"
-            android:id="@+id/textView_luminosite"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:background="#7ed1d1d1"/>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#7ed1d1d1">
-
-            <SeekBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekBar_luminosite"
-                android:progress="0"
-                android:splitTrack="false"
-                android:layout_weight="1"
-                android:indeterminate="false"
-                android:max="100" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="50"
-                android:id="@+id/textView_luminosite_sb"
-                android:layout_gravity="center_vertical|right" />
-        </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp" />
-
-        <CheckBox
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Niveau de gris"
-            android:id="@+id/checkBox_niveauDeGris"
-            android:checked="false"
-            android:textSize="18dp"
-            android:background="#7ed1d1d1" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp" />
-
-        <Button
-            android:layout_width="106dp"
-            android:layout_height="wrap_content"
-            android:text="Importer Image"
-            android:id="@+id/button_importer"
-            android:layout_gravity="center" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="15dp" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="91dp"
-            android:weightSum="1">
-
-            <Button
-                android:layout_width="114dp"
-                android:layout_height="wrap_content"
-                android:text="Importer Config"
-                android:id="@+id/button_importer_conf"
-                android:layout_gravity="left" />
-
-            <Button
-                android:layout_width="114dp"
-                android:layout_height="wrap_content"
-                android:text="Exporter Config"
-                android:id="@+id/button_exporter_conf"
-                android:layout_gravity="right" />
-        </LinearLayout>
-
-    </RadioGroup>
-
     <Space
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView2" >
+
+        <RadioGroup
+            android:layout_width="229dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|left"
+            android:id="@+id/radioGroup" >
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="  Acuité visuelle"
+                android:id="@+id/textView_acuite"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:background="#7ed1d1d1" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="#7ed1d1d1">
+
+                <EditText
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/editText_acuite"
+                    android:inputType="numberDecimal"
+                    android:text="10"
+                    android:textSize="18dp"
+                    android:numeric="integer|decimal"
+                    android:paddingLeft="40dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="/ 10"
+                    android:id="@+id/textView_acuite_deno"
+                    android:textSize="18dp" />
+
+                <Space
+                    android:layout_width="20dp"
+                    android:layout_height="0dp"/>
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/spinner_distance"
+                    android:entries="@array/distance_arrays" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="  Champ visuel"
+                android:id="@+id/textView_champVisuel"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:background="#7ed1d1d1" />
+
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Normal"
+                android:id="@+id/radioButton_normal"
+                android:textSize="18dp"
+                android:checked="true"
+                android:background="#7ed1d1d1"/>
+
+            <RadioButton
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Scotome"
+                android:id="@+id/radioButton_scotome"
+                android:singleLine="true"
+                android:textSize="18dp"
+                android:background="#7ed1d1d1"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="#7ed1d1d1"
+                android:weightSum="1">
+
+                <SeekBar
+                    android:layout_width="185dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seekBar_scotome"
+                    android:splitTrack="false"
+                    android:max="20" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="0°"
+                    android:id="@+id/textView_scotome"
+                    android:layout_gravity="center_vertical|right"
+                    android:gravity="right" />
+            </LinearLayout>
+
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Vision Tubulaire"
+                android:id="@+id/radioButton_tubulaire"
+                android:textSize="18dp"
+                android:checked="false"
+                android:background="#7ed1d1d1"
+                android:layout_gravity="right" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="#7ed1d1d1">
+
+                <SeekBar
+                    android:layout_width="185dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seekBar_tubulaire"
+                    android:progress="100"
+                    android:splitTrack="false"
+                    android:max="20" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="20°"
+                    android:id="@+id/textView_tubu"
+                    android:layout_gravity="center_vertical|right"
+                    android:editable="true"
+                    android:gravity="right" />
+            </LinearLayout>
+
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hémianopsie"
+                android:id="@+id/radioButton_hemianopsie"
+                android:textSize="18dp"
+                android:checked="false"
+                android:background="#7ed1d1d1"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="#7ed1d1d1">
+
+                <SeekBar
+                    android:layout_width="185dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seekBar_hemia"
+                    android:progress="100"
+                    android:splitTrack="false"
+                    android:indeterminate="false" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="100%"
+                    android:id="@+id/textView_hemia"
+                    android:layout_gravity="center_vertical|right"
+                    android:gravity="right" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#7ed1d1d1">
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinner_hemianopsie"
+                    android:entries="@array/hemia_arrays" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:layout_gravity="center_horizontal"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="  Contraste"
+                android:id="@+id/textView_contraste"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:editable="false"
+                android:background="#7ed1d1d1"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#7ed1d1d1">
+
+                <SeekBar
+                    android:layout_width="185dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seekBar_contraste"
+                    android:progress="100"
+                    android:splitTrack="false"
+                    android:layout_weight="1"
+                    android:indeterminate="false" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="100%"
+                    android:id="@+id/textView_contraste_sb"
+                    android:layout_gravity="center_vertical|right"
+                    android:gravity="right" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="  Luminosité"
+                android:id="@+id/textView_luminosite"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:background="#7ed1d1d1"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#7ed1d1d1">
+
+                <SeekBar
+                    android:layout_width="185dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seekBar_luminosite"
+                    android:progress="0"
+                    android:splitTrack="false"
+                    android:layout_weight="1"
+                    android:indeterminate="false"
+                    android:max="100" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="50%"
+                    android:id="@+id/textView_luminosite_sb"
+                    android:layout_gravity="center_vertical|right"
+                    android:gravity="right" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp" />
+
+            <CheckBox
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Niveau de gris"
+                android:id="@+id/checkBox_niveauDeGris"
+                android:checked="false"
+                android:textSize="18dp"
+                android:background="#7ed1d1d1" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp" />
+
+            <Button
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:text="Importer Image"
+                android:id="@+id/button_importer"
+                android:layout_gravity="center" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="15dp" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1">
+
+                <Button
+                    android:layout_width="114dp"
+                    android:layout_height="wrap_content"
+                    android:text="Importer Config"
+                    android:id="@+id/button_importer_conf"
+                    android:layout_gravity="left" />
+
+                <Button
+                    android:layout_width="114dp"
+                    android:layout_height="wrap_content"
+                    android:text="Exporter Config"
+                    android:id="@+id/button_exporter_conf"
+                    android:layout_gravity="right" />
+            </LinearLayout>
+
+        </RadioGroup>
+    </ScrollView>
 
     <RelativeLayout
         android:layout_width="match_parent"
