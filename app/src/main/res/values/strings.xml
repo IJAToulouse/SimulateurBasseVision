@@ -2,17 +2,21 @@
     <string name="app_name">Simulateur Basse Vision</string>
     <string name="title_item_detail">Item Detail</string>
     <string-array name="distance_arrays">
+        <item>32m</item>
+        <item>16m</item>
         <item>8m</item>
         <item>4m</item>
         <item>2m</item>
         <item>1m</item>
         <item>50cm</item>
         <item>25cm</item>
+        <item>12cm</item>
+        <item>6cm</item>
     </string-array>
 
     <string-array name="hemia_arrays">
-        <item>"Gauche"</item>
-        <item>"Droite"</item>
+        <item>"LHG"</item>
+        <item>"LHD"</item>
         <item>"Haut"</item>
     </string-array>
 </resources>

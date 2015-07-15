@@ -285,7 +285,7 @@ public class Controleur extends Activity {
                             if (valeur != maConfig.getAcuite()) {
                                 maConfig.setAcuite(valeur);
                                 acuite = maConfig.getAcuite();
-                                distanceSpinner.setSelection(1);
+                                distanceSpinner.setSelection(3);
                                 mettreAJourImage();
                             }
                         }
@@ -304,20 +304,30 @@ public class Controleur extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        acuite = maConfig.getAcuite() / 2; //8m
+                        acuite = maConfig.getAcuite() / 8; //32m
                         break;
                     case 1:
-                        acuite = maConfig.getAcuite(); //4m (defaut)
+                        acuite = maConfig.getAcuite() / 4; //16m
                         break;
                     case 2:
-                        acuite = maConfig.getAcuite() * 2; //2m
+                        acuite = maConfig.getAcuite() / 2; //8m
                         break;
                     case 3:
+                        acuite = maConfig.getAcuite(); //4m (defaut)
+                        break;
+                    case 4:
+                        acuite = maConfig.getAcuite() * 2; //2m
+                        break;
+                    case 5:
                         acuite = maConfig.getAcuite() * 4; //1m
                         break;
-                    case 4 : acuite = maConfig.getAcuite() * 8; //.5cm
+                    case 6 : acuite = maConfig.getAcuite() * 8; //5cm
                         break;
-                    case 5 : acuite = maConfig.getAcuite() * 16; //.25cm
+                    case 7 : acuite = maConfig.getAcuite() * 16; //25cm
+                        break;
+                    case 8 : acuite = maConfig.getAcuite() * 32; //12cm
+                        break;
+                    case 9 : acuite = maConfig.getAcuite() * 64; //6cm
                         break;
                     default:
                 }
@@ -654,15 +664,14 @@ public class Controleur extends Activity {
                 Uri selectedImageUri = data.getData();
                 String selectedImagePath = getPath(selectedImageUri);
                 bMap = BitmapFactory.decodeFile(selectedImagePath);
-                Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
+                /*Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
                 Utils.bitmapToMat(bMap, imageMat);
-                Utils.matToBitmap(imageMat, bMap);
+                Imgproc.cvtColor(imageMat, imageMat, Imgproc.COLOR_RGB2BGR);
+                Utils.matToBitmap(imageMat, bMap);*/
                 if ((float)bMap.getHeight() /(float)bMap.getWidth() == .5625 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .5625) { //16/9
                     if (bMap.getHeight() < bMap.getWidth()) {
-                        //bMap = Bitmap.createScaledBitmap(bMap, 1024, 576, false);
-                        bMap = Bitmap.createScaledBitmap(bMap, 1920, 1080, false);
-
+                        bMap = Bitmap.createScaledBitmap(bMap, 1024, 576, false);
                         calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 1024, 576, false);
                     } else {
                         bMap = Bitmap.createScaledBitmap(bMap, 576, 1024, false);
@@ -687,11 +696,13 @@ public class Controleur extends Activity {
                         calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 720, 960, false);
                     }
                 }
+
                 image.setImageBitmap(bMap);
                 bCalque = calqueOriginal;
                 original = bMap;
                 imageChargee = true;
                 activerElements();
+
             } else if (requestCode == SELECT_CONFIG) {
                 Serializer serializer = new Persister();
                 Uri selectedConfigUri = data.getData();
@@ -719,7 +730,7 @@ public class Controleur extends Activity {
      */
     public void mettreAJourIHM() {
         String acuite = Double.toString(maConfig.getAcuite());
-        distanceSpinner.setSelection(1);
+        distanceSpinner.setSelection(3);
         acuiteText.setText(acuite.toCharArray(), 0, acuite.length());
         if (maConfig.isScotome()) {
             fromUser = false;
@@ -981,7 +992,7 @@ public class Controleur extends Activity {
         acuiteText.setText("10".toCharArray(), 0, 2);
         maConfig.setAcuite(10.0);
         acuite = maConfig.getAcuite();
-        distanceSpinner.setSelection(1);
+        distanceSpinner.setSelection(3);
 
         scotomeSB.setProgress(0);
         maConfig.setScotomeSB(0);
