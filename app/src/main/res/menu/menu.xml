@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/menu_image"
+        android:icon="@drawable/add_icon"
+        android:showAsAction="always"
+        android:title=""/>
+    <item
+        android:id="@+id/menu_export"
+        android:icon="@drawable/export_icon"
+        android:showAsAction="always"
+        android:title=""/>
+    <item
+        android:id="@+id/menu_import"
+        android:icon="@drawable/import_icon"
+        android:showAsAction="always"
+        android:title=""/>
+    <item
         android:id="@+id/menu_reset"
         android:icon="@drawable/reset"
         android:showAsAction="always"

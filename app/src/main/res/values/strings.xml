@@ -19,4 +19,11 @@
         <item>"LHD"</item>
         <item>"Haut"</item>
     </string-array>
+
+    <string-array name="quadra_arrays">
+        <item>"G. Sup"</item>
+        <item>"G. Inf"</item>
+        <item>"D. Sup"</item>
+        <item>"D. Inf"</item>
+    </string-array>
 </resources>

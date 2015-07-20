@@ -21,7 +21,8 @@
             android:layout_width="229dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|left"
-            android:id="@+id/radioGroup" >
+            android:id="@+id/radioGroup"
+            android:gravity="center_vertical">
 
             <Space
                 android:layout_width="match_parent"
@@ -211,6 +212,53 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/spinner_hemianopsie"
                     android:entries="@array/hemia_arrays" />
+
+            </LinearLayout>
+
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Quadranopsie"
+                android:id="@+id/radioButton_quadra"
+                android:textSize="18dp"
+                android:checked="false"
+                android:background="#7ed1d1d1" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#7ed1d1d1" >
+
+                <SeekBar
+                    android:layout_width="185dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seekBar_quadra"
+                    android:progress="100"
+                    android:splitTrack="false"
+                    android:indeterminate="false" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="100%"
+                    android:id="@+id/textView_quadra"
+                    android:layout_gravity="center_vertical|right"
+                    android:gravity="right" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#7ed1d1d1">
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinner_quadra"
+                    android:entries="@array/quadra_arrays" />
             </LinearLayout>
 
             <Space
@@ -306,42 +354,6 @@
                 android:checked="false"
                 android:textSize="18dp"
                 android:background="#7ed1d1d1" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="15dp" />
-
-            <Button
-                android:layout_width="106dp"
-                android:layout_height="wrap_content"
-                android:text="Importer Image"
-                android:id="@+id/button_importer"
-                android:layout_gravity="center" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="15dp" />
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:weightSum="1">
-
-                <Button
-                    android:layout_width="114dp"
-                    android:layout_height="wrap_content"
-                    android:text="Importer Config"
-                    android:id="@+id/button_importer_conf"
-                    android:layout_gravity="left" />
-
-                <Button
-                    android:layout_width="114dp"
-                    android:layout_height="wrap_content"
-                    android:text="Exporter Config"
-                    android:id="@+id/button_exporter_conf"
-                    android:layout_gravity="right" />
-            </LinearLayout>
 
         </RadioGroup>
     </ScrollView>
