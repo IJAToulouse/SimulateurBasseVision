@@ -30,6 +30,14 @@ public class Configuration {
     private boolean isHemianopsie;
     @Element(name="hemianopsieID")
     private int hemianopsieID;
+    @Element(name="quadranopsie")
+    private int quadranopsie;
+    @Element(name="quadranopsieSB")
+    private int quadranopsieSB;
+    @Element(name="isQuadranopsie")
+    private boolean isQuadranopsie;
+    @Element(name="quadranopsieID")
+    private int quadranopsieID;
     @Element(name="contraste")
     private double contraste;
     @Element(name="contrasteSB")
@@ -74,6 +82,7 @@ public class Configuration {
         if (isScotome) {
             setIsVisionTubu(false);
             setIsHemianopsie(false);
+            setIsQuadranopsie(false);
         }
     }
 
@@ -102,6 +111,7 @@ public class Configuration {
         if (isVisionTubu) {
             setIsHemianopsie(false);
             setIsScotome(false);
+            setIsQuadranopsie(false);
         }
     }
 
@@ -130,6 +140,7 @@ public class Configuration {
         if (isHemianopsie) {
             setIsVisionTubu(false);
             setIsScotome(false);
+            setIsQuadranopsie(false);
         }
     }
 
@@ -139,6 +150,43 @@ public class Configuration {
 
     public void setHemianopsieID(int hemianopsieID) {
         this.hemianopsieID = hemianopsieID;
+    }
+
+    public int getQuadranopsie() {
+        return quadranopsie;
+    }
+
+    public void setQuadranopsie(int quadranopsie) {
+        this.quadranopsie = quadranopsie;
+    }
+
+    public int getQuadranopsieSB() {
+        return quadranopsieSB;
+    }
+
+    public void setQuadranopsieSB(int quadranopsieSB) {
+        this.quadranopsieSB = quadranopsieSB;
+    }
+
+    public boolean isQuadranopsie() {
+        return isQuadranopsie;
+    }
+
+    public void setIsQuadranopsie(boolean isQuadranopsie) {
+        this.isQuadranopsie = isQuadranopsie;
+        if (isQuadranopsie) {
+            setIsVisionTubu(false);
+            setIsScotome(false);
+            setIsHemianopsie(false);
+        }
+    }
+
+    public int getQuadranopsieID() {
+        return quadranopsieID;
+    }
+
+    public void setQuadranopsieID(int quadranopsieID) {
+        this.quadranopsieID = quadranopsieID;
     }
 
     public double getContraste() {

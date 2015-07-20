@@ -23,7 +23,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -67,13 +66,12 @@ public class Controleur extends Activity {
     private boolean imageChargee = false, fromUser =  true;
     private ImageView image, calque;
     private Bitmap bMap, original, bCalque, calqueOriginal;
-    private TextView tubulaireValue, scotomeValue, hemiaValue, acuiteDeno, contrasteValue, luminositeValue;
-    private SeekBar scotomeSB, tubulaireSB, hemiaSB, contrasteSB, luminositeSB;
-    private RadioButton normalRB, scotomeRB, tubuRB, hemiaRB;
-    private Spinner hemiaSpinner, distanceSpinner;
+    private TextView tubulaireValue, scotomeValue, hemiaValue, quadraValue, acuiteDeno, contrasteValue, luminositeValue;
+    private SeekBar scotomeSB, tubulaireSB, hemiaSB, quadraSB, contrasteSB, luminositeSB;
+    private RadioButton normalRB, scotomeRB, tubuRB, hemiaRB, quadraRB;
+    private Spinner hemiaSpinner, distanceSpinner, quadraSpinner;
     private CheckBox niveauDeGrisCB;
     private EditText acuiteText;
-    private Button importButton, exportButton;
 
     private BaseLoaderCallback mOpenCVCallBack = new BaseLoaderCallback(this) {
         @Override
@@ -127,6 +125,7 @@ public class Controleur extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         hemiaSpinner = (Spinner)findViewById(R.id.spinner_hemianopsie);
+        quadraSpinner = (Spinner)findViewById(R.id.spinner_quadra);
         distanceSpinner = (Spinner)findViewById(R.id.spinner_distance);
         image = (ImageView)findViewById(R.id.image);
         calque = (ImageView)findViewById(R.id.calque);
@@ -134,100 +133,12 @@ public class Controleur extends Activity {
         scotomeRB = (RadioButton)findViewById(R.id.radioButton_scotome);
         tubuRB = (RadioButton)findViewById(R.id.radioButton_tubulaire);
         hemiaRB = (RadioButton)findViewById(R.id.radioButton_hemianopsie);
+        quadraRB  = (RadioButton)findViewById(R.id.radioButton_quadra);
         niveauDeGrisCB = (CheckBox)findViewById(R.id.checkBox_niveauDeGris);
         acuiteText = (EditText)findViewById(R.id.editText_acuite);
         acuiteDeno = (TextView)findViewById(R.id.textView_acuite_deno);
         luminositeValue = (TextView)findViewById(R.id.textView_luminosite_sb);
         contrasteValue = (TextView)findViewById(R.id.textView_contraste_sb);
-
-        /**
-         * Listener pour le bouton pour importer l'image
-         */
-        findViewById(R.id.button_importer).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
-
-                // in onCreate or any event where your want the user to
-                // select a file
-                Intent galleryIntent = new Intent(
-                        Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                galleryIntent.setType("image/*");
-                startActivityForResult(galleryIntent, SELECT_PICTURE);
-            }
-        });
-
-
-        /**
-         * Listener pour le bouton exporter
-         */
-        exportButton = (Button)findViewById(R.id.button_exporter_conf);
-        exportButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
-                if (imageChargee) {
-                    final File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "SBV Configurations");
-                    directory.mkdirs();
-                    final Serializer serializer = new Persister();
-                    final AlertDialog.Builder alert = new AlertDialog.Builder(Controleur.this);
-
-                    alert.setTitle("Exporter");
-                    alert.setMessage("Entrez le nom du fichier XML");
-
-                    // Set an EditText view to get user input
-                    final EditText input = new EditText(Controleur.this);
-                    alert.setView(input);
-
-                    alert.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            String nomFichier = input.getText().toString();
-                            if (nomFichier.length() > 0) {
-                                File result = new File(directory, input.getText().toString() + ".xml");
-                                try {
-                                    serializer.write(maConfig, result);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                Toast.makeText(Controleur.this, "Fichier de configuration " + nomFichier +".xml créé.",
-                                        Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(Controleur.this, "Erreur sauvegarde.",
-                                        Toast.LENGTH_LONG).show();
-                            }
-                            hideKeyboard(input);
-                        }
-                    });
-
-                    alert.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            // Canceled.
-                            hideKeyboard(input);
-                        }
-                    });
-                    alert.show();
-                }
-            }
-        });
-
-        /**
-         * Listener pour le bouton importer
-         */
-        importButton = (Button)findViewById(R.id.button_importer_conf);
-        importButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (imageChargee) {
-                    Intent explorerIntent = new Intent(
-                            Intent.ACTION_PICK);
-                    //explorerIntent.putExtra("CONTENT_TYPE", "file/*");
-                    explorerIntent.setAction("com.sec.android.app.myfiles.PICK_DATA");
-                    try {
-                        startActivityForResult(explorerIntent, SELECT_CONFIG);
-                    } catch (android.content.ActivityNotFoundException ex) {
-                        Toast.makeText(Controleur.this, "Veuillez installez un explorateur de fichier",
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
-        });
 
         /**
          * Listener pour lorsqu'on coche quelque chose de différent dans le radio group
@@ -321,20 +232,23 @@ public class Controleur extends Activity {
                     case 5:
                         acuite = maConfig.getAcuite() * 4; //1m
                         break;
-                    case 6 : acuite = maConfig.getAcuite() * 8; //5cm
+                    case 6:
+                        acuite = maConfig.getAcuite() * 8; //5cm
                         break;
-                    case 7 : acuite = maConfig.getAcuite() * 16; //25cm
+                    case 7:
+                        acuite = maConfig.getAcuite() * 16; //25cm
                         break;
-                    case 8 : acuite = maConfig.getAcuite() * 32; //12cm
+                    case 8:
+                        acuite = maConfig.getAcuite() * 32; //12cm
                         break;
-                    case 9 : acuite = maConfig.getAcuite() * 64; //6cm
+                    case 9:
+                        acuite = maConfig.getAcuite() * 64; //6cm
                         break;
                     default:
                 }
                 if (acuite > 10) {
                     acuite = 10;
                 }
-                Log.i("ACUITE", acuite+"");
                 mettreAJourImage();
             }
 
@@ -351,7 +265,7 @@ public class Controleur extends Activity {
         scotomeSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                scotomeValue.setText(String.valueOf(progress)+"°");
+                scotomeValue.setText(String.valueOf(progress) + "°");
             }
 
             @Override
@@ -448,6 +362,54 @@ public class Controleur extends Activity {
             }
 
             @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        /**
+         * Listener pour la SeekBar Quadranopsie et le texte associé
+         */
+        quadraValue = (TextView)findViewById(R.id.textView_quadra);
+        quadraSB = (SeekBar)findViewById(R.id.seekBar_quadra);
+        quadraSB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                quadraValue.setText(String.valueOf(progress)+"%");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (imageChargee) {
+                    int valeur = seekBar.getProgress();
+                    //On met à jour que si la valeur change
+                    if (maConfig.getQuadranopsieSB() != valeur) {
+                        maConfig.setQuadranopsie((100 - valeur));
+                        maConfig.setQuadranopsieSB(valeur);
+                        mettreAJourCalque();
+                    }
+                }
+            }
+        });
+
+        /**
+         * Listener pour le spinner de la quadranopsie
+         */
+        quadraSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (imageChargee) {
+                    if (maConfig.getQuadranopsieSB() != 100) {
+                        mettreAJourCalque();
+                    }
+                    maConfig.setQuadranopsieID(quadraSpinner.getSelectedItemPosition());
+                }
+            }
+
+            @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
@@ -505,7 +467,6 @@ public class Controleur extends Activity {
                         if (valeur > 50) {
                             Double valeurDouble = Math.floor((valeur - 50) * COEFFICIENT_LUMI_SUP);
                             maConfig.setLuminosite(doubleToInt(valeurDouble));
-                           // maConfig.setLuminosite((valeur - 50) * COEFFICIENT_LUMINOSITE);
                         } else if (seekBar.getProgress() < 50) {
                             maConfig.setLuminosite(0 - ((50 - valeur) * COEFFICIENT_LUMINOSITE_INF));
                         } else {
@@ -568,6 +529,8 @@ public class Controleur extends Activity {
                         bCalque = appliquerVisionTubulaire(bCalque, maConfig.getVisionTubu());
                     } else if (hemiaRB.isChecked()) {
                         bCalque = appliquerHemianopsie(bCalque, maConfig.getHemianopsie());
+                    } else if (quadraRB.isChecked()) {
+                        bCalque = appliquerQuadranopsie(bCalque, maConfig.getQuadranopsie());
                     }
                     calque.setImageBitmap(bCalque);
                 } catch (Exception e) {
@@ -618,7 +581,7 @@ public class Controleur extends Activity {
     }
 
     /**
-     * Action à faire lorsque qu'on tap sur l'icone d'A propos
+     * Action à faire lorsque qu'on tap sur les icones de la barre d'action
      * @param item
      * @return
      */
@@ -629,7 +592,7 @@ public class Controleur extends Activity {
                 // Comportement du bouton "A Propos"
                 new AlertDialog.Builder(this)
                         .setTitle("À propos")
-                        .setMessage("Simulateur Basse Vision ©\n\nVersion application : 0.8")
+                        .setMessage("Simulateur Basse Vision ©\n\nVersion application : 1.0")
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // ne rien faire
@@ -644,6 +607,70 @@ public class Controleur extends Activity {
                     image.setImageBitmap(original);
                     calque.setImageBitmap(calqueOriginal);
                 }
+                return true;
+            case R.id.menu_import :
+                if (imageChargee) {
+                    Intent explorerIntent = new Intent(
+                            Intent.ACTION_PICK);
+                    //explorerIntent.putExtra("CONTENT_TYPE", "file/*");
+                    explorerIntent.setAction("com.sec.android.app.myfiles.PICK_DATA");
+                    try {
+                        startActivityForResult(explorerIntent, SELECT_CONFIG);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                        Toast.makeText(Controleur.this, "Veuillez installez un explorateur de fichier",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+                return true;
+            case R.id.menu_export :
+                if (imageChargee) {
+                    final File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "SBV Configurations");
+                    directory.mkdirs();
+                    final Serializer serializer = new Persister();
+                    final AlertDialog.Builder alert = new AlertDialog.Builder(Controleur.this);
+
+                    alert.setTitle("Exporter");
+                    alert.setMessage("Entrez le nom du fichier XML");
+
+                    // Set an EditText view to get user input
+                    final EditText input = new EditText(Controleur.this);
+                    alert.setView(input);
+
+                    alert.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            String nomFichier = input.getText().toString();
+                            if (nomFichier.length() > 0) {
+                                File result = new File(directory, input.getText().toString() + ".xml");
+                                try {
+                                    serializer.write(maConfig, result);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                Toast.makeText(Controleur.this, "Fichier de configuration " + nomFichier +".xml créé.",
+                                        Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(Controleur.this, "Erreur sauvegarde.",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            hideKeyboard(input);
+                        }
+                    });
+
+                    alert.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            // Canceled.
+                            hideKeyboard(input);
+                        }
+                    });
+                    alert.show();
+                }
+                return true;
+            case R.id.menu_image :
+                Intent galleryIntent = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                galleryIntent.setType("image/*");
+                startActivityForResult(galleryIntent, SELECT_PICTURE);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -664,10 +691,6 @@ public class Controleur extends Activity {
                 Uri selectedImageUri = data.getData();
                 String selectedImagePath = getPath(selectedImageUri);
                 bMap = BitmapFactory.decodeFile(selectedImagePath);
-                /*Mat imageMat = new Mat ( bMap.getHeight(), bMap.getWidth(), CvType.CV_8UC1);
-                Utils.bitmapToMat(bMap, imageMat);
-                Imgproc.cvtColor(imageMat, imageMat, Imgproc.COLOR_RGB2BGR);
-                Utils.matToBitmap(imageMat, bMap);*/
                 if ((float)bMap.getHeight() /(float)bMap.getWidth() == .5625 ||
                         (float)bMap.getWidth() / (float)bMap.getHeight() == .5625) { //16/9
                     if (bMap.getHeight() < bMap.getWidth()) {
@@ -696,7 +719,6 @@ public class Controleur extends Activity {
                         calqueOriginal = Bitmap.createScaledBitmap(calqueOriginal, 720, 960, false);
                     }
                 }
-
                 image.setImageBitmap(bMap);
                 bCalque = calqueOriginal;
                 original = bMap;
@@ -749,7 +771,13 @@ public class Controleur extends Activity {
             hemiaSB.setProgress(maConfig.getHemianopsieSB());
             hemiaSpinner.setSelection(maConfig.getHemianopsieID());
             fromUser = true;
-        } else {
+        } else if (maConfig.isQuadranopsie()) {
+            fromUser = false;
+            quadraRB.setChecked(true);
+            quadraSB.setProgress(maConfig.getQuadranopsieSB());
+            quadraSpinner.setSelection(maConfig.getQuadranopsieID());
+        } else
+        {
             normalRB.setChecked(true);
         }
         miseAJourSliders();
@@ -768,11 +796,6 @@ public class Controleur extends Activity {
             Mat tmp = new Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC1);
             Utils.bitmapToMat(src, tmp);
             Double size = 0.;
-            /*size = Math.exp(10.0 - valeur) / 100;
-            if (Math.floor(size) % 2 != 1) {
-                size ++;
-            }
-            Log.i("ACUITE", size + "");*/
             // Flou testé et proche de la réalité pour 4.5m
             if (valeur >= 6) {
                 size = 1.;
@@ -808,7 +831,6 @@ public class Controleur extends Activity {
             org.opencv.core.Size s = new Size(size, size);
             Imgproc.GaussianBlur(tmp, tmp, s, 0, 0);
             Utils.matToBitmap(tmp, src);
-
         }
         return src;
     }
@@ -895,6 +917,41 @@ public class Controleur extends Activity {
         return bCalque;
     }
 
+    private Bitmap appliquerQuadranopsie(Bitmap bCalque, int valeur) {
+        if (valeur != 0) {
+            Mat tmp = new Mat(bCalque.getWidth(), bCalque.getHeight(), CvType.CV_8UC1);
+            Utils.bitmapToMat(bCalque, tmp);
+            if (quadraSpinner.getSelectedItemPosition() == 0) { // Gauche sup
+                rectangle(tmp,
+                        new Point(0, 0),
+                        new Point(bCalque.getWidth()/2 * valeur / 100, bCalque.getHeight()/2 * valeur / 100),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            } else if (quadraSpinner.getSelectedItemPosition() == 1) { // Gauche inf
+                rectangle(tmp,
+                        new Point(0, bCalque.getHeight()),
+                        new Point(bCalque.getWidth()/2 * valeur / 100, (bCalque.getHeight() - (bCalque.getHeight() / 2 * valeur / 100))),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            }
+            else if (quadraSpinner.getSelectedItemPosition() == 2) { // Droite sup
+                rectangle(tmp,
+                        new Point(bCalque.getWidth(), 0),
+                        new Point(bCalque.getWidth() - (bCalque.getWidth() / 2 * valeur / 100), bCalque.getHeight() / 2 * valeur / 100),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            } else if (quadraSpinner.getSelectedItemPosition() == 3) { // Droite inf
+                rectangle(tmp,
+                        new Point(bCalque.getWidth(), bCalque.getHeight()),
+                        new Point(bCalque.getWidth() - (bCalque.getWidth() / 2* valeur / 100), (bCalque.getHeight() - (bCalque.getHeight() / 2 * valeur / 100))),
+                        new Scalar(40, 40, 40, 255),
+                        -1);
+            }
+            Imgproc.GaussianBlur(tmp, tmp, new org.opencv.core.Size(21, 21), 0, 0);
+            Utils.matToBitmap(tmp, bCalque);
+        }
+        return bCalque;
+    }
     /**
      * Convertit l'image en niveau de gris
      * @param src
@@ -1003,6 +1060,9 @@ public class Controleur extends Activity {
         hemiaSB.setProgress(100);
         maConfig.setHemianopsieSB(100);
         maConfig.setHemianopsie(0);
+        quadraSB.setProgress(100);
+        maConfig.setQuadranopsieSB(100);
+        maConfig.setQuadranopsie(0);
 
         contrasteSB.setProgress(100);
         maConfig.setContrasteSB(100);
@@ -1031,37 +1091,62 @@ public class Controleur extends Activity {
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(false);
+            quadraSB.setEnabled(false);
             scotomeValue.setEnabled(false);
             tubulaireValue.setEnabled(false);
             hemiaValue.setEnabled(false);
             hemiaSpinner.setEnabled(false);
+            quadraValue.setEnabled(false);
+            quadraSpinner.setEnabled(false);
         } else if (scotomeRB.isChecked()) {
             maConfig.setIsScotome(true);
             scotomeSB.setEnabled(true);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(false);
+            quadraSB.setEnabled(false);
             scotomeValue.setEnabled(true);
             tubulaireValue.setEnabled(false);
             hemiaValue.setEnabled(false);
             hemiaSpinner.setEnabled(false);
+            quadraValue.setEnabled(false);
+            quadraSpinner.setEnabled(false);
         } else if (tubuRB.isChecked()) {
             maConfig.setIsVisionTubu(true);
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(true);
             hemiaSB.setEnabled(false);
+            quadraSB.setEnabled(false);
             scotomeValue.setEnabled(false);
             tubulaireValue.setEnabled(true);
             hemiaValue.setEnabled(false);
             hemiaSpinner.setEnabled(false);
+            quadraValue.setEnabled(false);
+            quadraSpinner.setEnabled(false);
         } else if (hemiaRB.isChecked()) {
             maConfig.setIsHemianopsie(true);
             scotomeSB.setEnabled(false);
             tubulaireSB.setEnabled(false);
             hemiaSB.setEnabled(true);
+            quadraSB.setEnabled(false);
             scotomeValue.setEnabled(false);
             tubulaireValue.setEnabled(false);
             hemiaValue.setEnabled(true);
             hemiaSpinner.setEnabled(true);
+            quadraValue.setEnabled(false);
+            quadraSpinner.setEnabled(false);
+        } else if (quadraRB.isChecked()) {
+            maConfig.setIsQuadranopsie(true);
+            scotomeSB.setEnabled(false);
+            tubulaireSB.setEnabled(false);
+            hemiaSB.setEnabled(false);
+            quadraSB.setEnabled(true);
+            scotomeValue.setEnabled(false);
+            tubulaireValue.setEnabled(false);
+            hemiaValue.setEnabled(false);
+            hemiaSpinner.setEnabled(false);
+            quadraValue.setEnabled(true);
+            quadraSpinner.setEnabled(true);
+
         }
     }
 
@@ -1081,7 +1166,13 @@ public class Controleur extends Activity {
         maConfig.setHemianopsie(0);
         maConfig.setHemianopsieSB(100);
         hemiaSpinner.setSelection(0);
-        maConfig.setHemianopsie(hemiaSpinner.getSelectedItemPosition());
+        maConfig.setHemianopsieID(hemiaSpinner.getSelectedItemPosition());
+
+        quadraSB.setProgress(100);
+        maConfig.setQuadranopsieSB(0);
+        maConfig.setQuadranopsieSB(100);
+        quadraSpinner.setSelection(0);
+        maConfig.setQuadranopsieID(quadraSpinner.getSelectedItemPosition());
     }
 
     /**
@@ -1117,13 +1208,12 @@ public class Controleur extends Activity {
         scotomeRB.setEnabled(false);
         tubuRB.setEnabled(false);
         hemiaRB.setEnabled(false);
+        quadraRB.setEnabled(false);
         contrasteSB.setEnabled(false);
         contrasteValue.setEnabled(false);
         luminositeSB.setEnabled(false);
         luminositeValue.setEnabled(false);
         niveauDeGrisCB.setEnabled(false);
-        importButton.setEnabled(false);
-        exportButton.setEnabled(false);
     }
 
     /**
@@ -1136,13 +1226,12 @@ public class Controleur extends Activity {
         normalRB.setEnabled(true);
         scotomeRB.setEnabled(true);
         hemiaRB.setEnabled(true);
+        quadraRB.setEnabled(true);
         tubuRB.setEnabled(true);
         contrasteSB.setEnabled(true);
         contrasteValue.setEnabled(true);
         luminositeSB.setEnabled(true);
         luminositeValue.setEnabled(true);
         niveauDeGrisCB.setEnabled(true);
-        importButton.setEnabled(true);
-        exportButton.setEnabled(true);
     }
 }
